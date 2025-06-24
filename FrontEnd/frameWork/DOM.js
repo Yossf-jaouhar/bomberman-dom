@@ -67,6 +67,10 @@ export function E(tag, props = {}) {
 
 // Create real DOM from virtual DOM
 export function renderV(vnode) {
+  if (vnode === null || vnode === undefined) {
+    return document.createTextNode('');
+  }
+
   if (typeof vnode === "string" || typeof vnode === "number") {
     return document.createTextNode(vnode);
   }
@@ -184,12 +188,12 @@ export function MyNewPatch(root, oldN, newN, pos = 0) {
       if (key !== undefined && oldKeyMap.has(key)) {
         const [matchedOld, oldIdx] = oldKeyMap.get(key);
         usedIndices.add(oldIdx);
-        console.log('hahahaha',{ domNode, matchedOld, newChild, oldIdx });
+        console.log('hahahaha', { domNode, matchedOld, newChild, oldIdx });
 
         MyNewPatch(domNode, matchedOld, newChild, oldIdx);
       } else {
         console.log('huhuhuhhuhu');
-        
+
         MyNewPatch(domNode, undefined, newChild, newIdx);
       }
     });

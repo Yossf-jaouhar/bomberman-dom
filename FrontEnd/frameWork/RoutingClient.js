@@ -1,6 +1,6 @@
 import { MyNewPatch, renderV } from "./DOM.js"
 
-export class App {
+export default class App {
   constructor(rootId) {
     this.routes = new Map()
     this.root = document.getElementById(rootId) || document.body
@@ -65,8 +65,9 @@ export class App {
   }
 
   render() {
+    console.log("App is rendering" , this.routes);
+    
     this.handleRoute()
-
     document.body.addEventListener("click", e => {
       const a = e.target.closest("a")
       if (!a) return
