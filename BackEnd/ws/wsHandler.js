@@ -1,39 +1,30 @@
+const { Server } = require("socket.io");
+const { game } = require("../Game/game");
+const { default: JoinRoom } = require("../Game/players");
 
-const WebSocket = require('ws');
-const { game } = require('../Game/game');
+function setupSocketIO(server) {
+  const io = new Server(server);
 
-function setupWebSocket(server) {
-  const wss = new WebSocket.Server({ server });
+  io.on("connection", (socket) => {
 
-  wss.on('connection', (ws, req) => {
-    
+    // New Player
+    JoinRoom(socket, socket.request);
 
-    //Joining the game
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const name = url.searchParams.get('name');
-    if (!name) {
-      ws.send('Error: Name parameter is required');
-      ws.close();
-      return;
-    }
-    const room = game.join(name);
-    console.log(`Client connected: ${name} joined room with ${room.players.length} player(s)`);
-    ws.send(`Welcome ${name}! You joined a room with ${room.players.length} player(s).`);
-    
-
-
-
-    ws.on('message', (message) => {
+    // Receive messages
+    socket.on("message", (message) => {
       console.log(`[${name}]: ${message}`);
-      ws.send(`Server received: ${message}`);
+      // Echo or broadcast to room
+      socket.emit("message", `Server received: ${message}`);
     });
 
-    ws.on('close', () => {
+    // When client disconnects
+    socket.on("disconnect", () => {
       room.removePlayer(name);
-      console.log(`Client disconnected: ${name} left the room. Remaining players: ${room.players.length}`);
-      
+      console.log(
+        `Client disconnected: ${name} left the room. Remaining players: ${room.players.length}`
+      );
     });
   });
 }
 
-module.exports = setupWebSocket;
+module.exports = setupSocketIO;
