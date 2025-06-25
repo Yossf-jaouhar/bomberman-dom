@@ -14,8 +14,9 @@ export default function Start() {
             return;
         }
         SetError('');
+        Myapp.setGlobalState('name', nick);
         connectWebSocket(nick);
-        Myapp.navigate('/chat');
+        Myapp.navigate('/lobby');
     }
 
     return E('div', { class: 'modal-backdrop' }).childs(

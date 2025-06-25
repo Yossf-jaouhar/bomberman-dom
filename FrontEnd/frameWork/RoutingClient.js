@@ -8,9 +8,14 @@ export default class App {
     this.hookIndex = 0
     this.currentDOMFunc = null
     this.currentComponent = null
-
+    this.GlobalState = {}
     window.addEventListener("popstate", () => this.handleRoute())
   }
+  setGlobalState = (key , newVal) => {
+    this.GlobalState[key] = newVal;
+    this.rerender();
+  };
+  getGlobalState = (key) => this.GlobalState[key];
 
   addRoute(path, handler) {
     this.routes.set(path, handler)
@@ -20,7 +25,6 @@ export default class App {
     history.pushState({}, "", path)
     this.handleRoute()
   }
-
   useState(initialValue) {
     const currentIndex = this.hookIndex
     if (this.hookStates[currentIndex] === undefined) {
