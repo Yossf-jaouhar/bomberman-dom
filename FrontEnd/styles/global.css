@@ -1,0 +1,45 @@
+* {
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+}
+h1 , p, h2 , h3 , h4, h5 {
+    margin: 0;
+    color: white;
+}
+
+.df {
+    display: flex;
+}
+.fc {
+    flex-direction: column;
+}
+.gp4 {
+    gap: 4px;
+}
+.gp8 {
+    gap: 8px;
+}
+.gp16 {
+    gap: 16px;
+}
+.gp24 {
+    gap: 24px;
+}
+.center {
+    align-items: center;
+}
+.center2 {
+   justify-content: center;
+}
+.spB {
+    justify-content: space-between;
+}
+.strech {
+    align-self: stretch;
+}
+.hidden {
+    display: none;
+}
+.grow {
+    flex-grow: 1;
+}

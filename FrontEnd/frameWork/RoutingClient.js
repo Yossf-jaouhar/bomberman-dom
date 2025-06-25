@@ -11,7 +11,7 @@ export default class App {
     this.GlobalState = {}
     window.addEventListener("popstate", () => this.handleRoute())
   }
-  setGlobalState = (key , newVal) => {
+  setGlobalState = (key, newVal) => {
     this.GlobalState[key] = newVal;
     this.rerender();
   };
@@ -34,10 +34,13 @@ export default class App {
     }
 
     const setState = newVal => {
-      console.log(newVal);
-      this.hookStates[currentIndex] = newVal
-      this.rerender()
-    }
+      if (typeof newVal === 'function') {
+        this.hookStates[currentIndex] = newVal(this.hookStates[currentIndex]);
+      } else {
+        this.hookStates[currentIndex] = newVal;
+      }
+      this.rerender();
+    };
 
     const getState = () => this.hookStates[currentIndex]
     this.hookIndex++
@@ -47,7 +50,7 @@ export default class App {
   rerender() {
     this.hookIndex = 0
     const newVNode = this.currentDOMFunc()
-    console.log(this.currentComponent , newVNode);
+    console.log(this.currentComponent, newVNode);
     MyNewPatch(this.root, this.currentComponent, newVNode)
     this.currentComponent = newVNode
   }
@@ -72,8 +75,8 @@ export default class App {
   }
 
   render() {
-    console.log("App is rendering" , this.routes);
-    
+    console.log("App is rendering", this.routes);
+
     this.handleRoute()
     document.body.addEventListener("click", e => {
       const a = e.target.closest("a")

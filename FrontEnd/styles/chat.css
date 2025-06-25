@@ -1,0 +1,49 @@
+.chat {
+    display: flex;
+    transition: flex-grow 0.3s;
+    background: #ffffff10;
+    flex-grow: 1;
+    height: 80%;
+    align-self: stretch;
+    min-width: 360px;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+.chat-input {
+    background: transparent;
+    background-color: #ffffff10;
+    align-self: flex-end;
+    width: 100%;
+
+}
+
+input {
+    background: transparent;
+    background-color: #ffffff10;
+    outline: none;
+    border: none;
+    color: white;
+    height: 40px;
+    flex-grow: 1;
+}
+
+button {
+    height: 40px;
+    background: rgb(12, 87, 145);
+    outline: none;
+    border: none;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px  16px 8px 16px;
+}
+.chatContainer {
+    flex-grow: 1;
+}
+.openClose {
+  background-color: #ffffff33;
+  padding: 8px;
+  min-width: 360px;
+}
