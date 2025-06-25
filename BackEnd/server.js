@@ -1,13 +1,13 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const WebSocket = require('ws');
-const setupWebSocket = require('./ws/wsHandler');
-
+const { Server } = require('socket.io');
+const { game } = require('./Game/game'); 
+const setupSocketIO = require('./ws/wsHandler');
 
 const PORT = 3000;
 const frontendDir = path.join(__dirname, '..', 'FrontEnd');
-const indexFile = path.join(__dirname, '..', 'FrontEnd', 'index.html');
+const indexFile = path.join(frontendDir, 'index.html');
 
 const contentTypes = {
   '.html': 'text/html',
@@ -20,19 +20,16 @@ const contentTypes = {
   '.json': 'application/json',
 };
 
-// Create the HTTP server
+// Create HTTP server
 const server = http.createServer((req, res) => {
-
-
-  // BackEnd API handling
   if (req.url.startsWith('/api/')) {
+    // Simple API example
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ message: `API response for ${req.url}` }));
     return;
   }
 
-
-  // Serve static files from the FrontEnd directory
+  // Serve static files
   const safePath = path.normalize(req.url).replace(/^(\.\.[\/\\])+/, '');
   const staticFilePath = path.join(frontendDir, safePath);
 
@@ -51,8 +48,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-
-  // Serve index.html for root or any non-file request (SPA fallback)
+  // SPA fallback: serve index.html
   fs.readFile(indexFile, (err, data) => {
     if (err) {
       res.writeHead(500);
@@ -63,7 +59,7 @@ const server = http.createServer((req, res) => {
   });
 });
 
-setupWebSocket(server);
+setupSocketIO(server)
 
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
