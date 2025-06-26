@@ -9,7 +9,11 @@ export default function Lobby() {
         Myapp.navigate("/");
         return;
     }
-
+    window.addEventListener("popstate", () => {
+        console.log("Back navigation detected. Closing WebSocket...");
+        socket.close();
+    });
+    Myapp.GlobalState._popstateHandlerAdded = true;
     const socket = getSocket();
     let [nOfPlayers, setNoOfPlayers] = Myapp.useState(1);
     let [counter, setCounter] = Myapp.useState(null);
@@ -53,14 +57,14 @@ export default function Lobby() {
     });
 
     socket.on("waiting", (data) => {
-        console.log("waiting received" , data);
+        console.log("waiting received", data);
         setRoomState("waiting");
         setNoOfPlayers(2)
         startCountdown(data.Counter);
     });
 
     socket.on("preparing", (data) => {
-        console.log("preparing received" , data);
+        console.log("preparing received", data);
         setRoomState("preparing");
         startCountdown(data.counter);
     });

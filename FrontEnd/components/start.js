@@ -4,8 +4,8 @@ import Myapp from "../helper/appInstance.js";
 
 export default function Start() {
   // Get the global states
-  const name = Myapp.getGlobalState("name") || "";  
-  const error = Myapp.getGlobalState("error") || ""; 
+  const name = Myapp.getGlobalState("name") || "";
+  const error = Myapp.getGlobalState("error") || "";
 
   function handleNickname() {
     const nick = Myapp.getGlobalState("name");
