@@ -1,3 +1,5 @@
+const Player = require('./player');
+
 class Room {
   constructor() {
     this.RoomState = null; // "solo", "waiting", "preparing", "started"
@@ -12,7 +14,8 @@ class Room {
   }
 
   addPlayer(name, socket) {
-    this.players[name] = socket;
+    const player = new Player(name, socket);
+    this.players[name] = player;
 
     const playerCount = Object.keys(this.players).length;
 
@@ -32,12 +35,12 @@ class Room {
   }
 
   broadcast(event, data) {
-    for (const socket of Object.values(this.players)) {
-      if (!socket || typeof socket.emit !== "function") {
-        console.warn(`Invalid socket, skipping broadcast...`);
+    for (const player of Object.values(this.players)) {
+      if (!player.socket || typeof player.socket.emit !== "function") {
+        console.warn(`Invalid socket for ${player.name}, skipping...`);
         continue;
       }
-      socket.emit(event, data);
+      player.socket.emit(event, data);
     }
   }
 
@@ -45,7 +48,6 @@ class Room {
     this.RoomState = "waiting";
     this.Counter = 20;
 
-    // 👉 Broadcast only ONCE at the START
     this.broadcast("waiting", { counter: this.Counter }); 
 
     if (this.timeInt) return;
@@ -65,7 +67,6 @@ class Room {
     this.RoomState = "preparing";
     this.Counter = 10;
 
-    // 👉 Broadcast only ONCE at the START
     this.broadcast("preparing", { counter: this.Counter }); 
 
     if (this.timeInt) return;
@@ -76,6 +77,7 @@ class Room {
         clearInterval(this.timeInt);
         this.timeInt = null;
         console.log("Preparing finished");
+        // 👉 Here you can call this.startGame() if needed
       }
     }, 1000);
   }
