@@ -1,60 +1,74 @@
 class Room {
   constructor() {
     this.RoomState = null; // "solo", "waiting", "preparing", "started"
-    this.players = [];
+    this.players = {};
     this.Counter = null;
     this.timeInt = null;
     this.chatMessages = [];
   }
 
   hasPlayer(name) {
-    return this.players.includes(name);
+    return this.players.hasOwnProperty(name);
   }
 
-  addPlayer(name) {
-    this.players.push(name);
-    if (this.players.length === 1) {
+  addPlayer(name, socket) {
+    this.players[name] = socket;
+
+    const playerCount = Object.keys(this.players).length;
+
+    if (playerCount === 1) {
       this.RoomState = "solo";
     }
-    if (this.players.length === 2) {
+    if (playerCount === 2) {
       this.startWaiting();
     }
-    if (this.players.length === 4) {
+    if (playerCount === 4) {
       this.startPreparing();
     }
   }
 
   removePlayer(name) {
-    const index = this.players.indexOf(name);
-    if (index !== -1) {
-      this.players.splice(index, 1);
+    delete this.players[name];
+  }
+
+  broadcast(event, data) {
+    for (const socket of Object.values(this.players)) {
+      if (!socket || typeof socket.emit !== "function") {
+        console.warn(`Invalid socket, skipping broadcast...`);
+        continue;
+      }
+      socket.emit(event, data);
     }
   }
 
-  // 20s countdown when 2nd player joins
   startWaiting() {
     this.RoomState = "waiting";
-    if (this.timeInt) return;
-
     this.Counter = 20;
+
+    // 👉 Broadcast only ONCE at the START
+    this.broadcast("waiting", { counter: this.Counter }); 
+
+    if (this.timeInt) return;
 
     this.timeInt = setInterval(() => {
       this.Counter--;
       if (this.Counter <= 0) {
         clearInterval(this.timeInt);
         this.timeInt = null;
-        console.log("Waiting finished");
+        console.log("waiting finished !");
         this.startPreparing();
       }
     }, 1000);
   }
 
-  // 10s countdown when 4th player joins or when waiting time ends
   startPreparing() {
     this.RoomState = "preparing";
-    if (this.timeInt) return;
-
     this.Counter = 10;
+
+    // 👉 Broadcast only ONCE at the START
+    this.broadcast("preparing", { counter: this.Counter }); 
+
+    if (this.timeInt) return;
 
     this.timeInt = setInterval(() => {
       this.Counter--;

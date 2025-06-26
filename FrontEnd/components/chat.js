@@ -8,8 +8,12 @@ export default function Chat() {
 
     const [chatMessages, setChatMessages] = Myapp.useState([]);
     const [hidden, setHidden] = Myapp.useState(true);
-
+    socket.off("chatMessage")
+    socket.off("MessageHistory")
     // Listen for chat messages from the server
+    socket.on("MessageHistory", (data) => {
+        setChatMessages(data.Messages)
+    })
     socket.on("chatMessage", (data) => {
         setChatMessages((prev) => [...prev, data]);
     });
@@ -18,7 +22,7 @@ export default function Chat() {
     function sendMessage(value) {
         console.log(value);
         if (!value.trim()) return;
-        setChatMessages((prev) => [...prev, { from: "me", text: value.trim() }]);
+        // setChatMessages((prev) => [...prev, { from: "me", text: value.trim() }]);
         socket.emit("chatMessage", { from: name, text: value.trim() });
     }
 

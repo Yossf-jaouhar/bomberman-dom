@@ -17,20 +17,33 @@ function setupSocketIO(server) {
       socket.disconnect();
       return;
     }
-    const room = game.join(name);
-    console.log(`Client connected: ${name} joined room, ${room.players.length} player(s)`);
-    socket.emit("joined", {
+    const room = game.join(name, socket);
+    console.log("joined", Object.keys(room.players).length);
+    room.broadcast("joined", {
       RoomState: room.RoomState,
-      nofPlayers: room.players.length,
+      nofPlayers: Object.keys(room.players).length,
       Counter: room.Counter,
-      chatMessages: room.chatMessages
+    });
+    room.broadcast("MessageHistory", {
+      Messages: room.chatMessages,
+    });
+
+
+    //receive Messages
+    socket.on("chatMessage", (data) => {
+      console.log(`[${name}]: ${data.text}`);
+      room.chatMessages.push({ from: name, text: data.text });
+      room.broadcast("chatMessage", {
+        from: name,
+        text: data.text,
+      });
     });
 
 
     // Handle messages
     socket.on("message", (message) => {
       console.log(`[${name}]: ${message}`);
-      socket.emit("message", `Server received: ${message}`);
+      // socket.emit("message", `Server received: ${message}`);
     });
 
 
@@ -41,7 +54,7 @@ function setupSocketIO(server) {
       console.log(`👋 Client disconnected: ${name} left room ${room.id}. Remaining players: ${room.players.length}`);
     });
 
-    
+
   });
 }
 

@@ -11,18 +11,19 @@ class Game {
         this.rooms[roomId] = new Room();
         return this.rooms[roomId];
     }
-
-    join(playerName) {
+    join(playerName, socket) {
         for (const id in this.rooms) {
-            if (!this.rooms[id].hasPlayer(playerName)) {
-                this.rooms[id].addPlayer(playerName);
-                return this.rooms[id];
+            const room = this.rooms[id];
+            if (!room.hasPlayer(playerName) && Object.keys(room.players).length < 4) {
+                room.addPlayer(playerName, socket);
+                return room;
             }
         }
-        const rom = this.createRoom();
-        rom.addPlayer(playerName);
-        return rom;
+        const newRoom = this.createRoom();
+        newRoom.addPlayer(playerName, socket);
+        return newRoom;
     }
+
 }
 
 const game = new Game();
