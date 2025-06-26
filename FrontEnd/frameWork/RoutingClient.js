@@ -24,6 +24,8 @@ export default class App {
   }
 
   navigate(path) {
+    this.hookIndex = 0
+    this.root.innerHTML = "";
     history.pushState({}, "", path)
     this.handleRoute()
   }

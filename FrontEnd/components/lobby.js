@@ -9,11 +9,6 @@ export default function Lobby() {
         Myapp.navigate("/");
         return;
     }
-    window.addEventListener("popstate", () => {
-        console.log("Back navigation detected. Closing WebSocket...");
-        socket.close();
-    });
-    Myapp.GlobalState._popstateHandlerAdded = true;
     const socket = getSocket();
     let [nOfPlayers, setNoOfPlayers] = Myapp.useState(1);
     let [counter, setCounter] = Myapp.useState(null);
