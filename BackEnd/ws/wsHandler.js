@@ -38,6 +38,12 @@ function setupSocketIO(server) {
         text: data.text,
       });
     });
+    
+    //player movement 
+    socket.on("move", (data) => {
+      const dir = data.direction;
+      room.movePlayer(name, dir);
+    })
 
 
     // Handle messages

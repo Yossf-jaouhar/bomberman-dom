@@ -3,17 +3,25 @@ import { connectWebSocket } from "../ws/wsHandler.js";
 import Myapp from "../helper/appInstance.js";
 
 export default function Start() {
-  // Get the global states
-  const name = Myapp.getGlobalState("name") || "";  
-  const error = Myapp.getGlobalState("error") || ""; 
+  // If user already has a name, redirect immediately
+  if (Myapp.getGlobalState("name")) {
+    Myapp.root.innerHTML = ""
+    Myapp.navigate("/lobby");
+    return
+  }
+
+  // Local state for input value, initialized from global state or empty
+  let inputValue = Myapp.getGlobalState("name") || "";
+  const error = Myapp.getGlobalState("error") || "";
 
   function handleNickname() {
-    const nick = Myapp.getGlobalState("name");
+    const nick = inputValue.trim();
     if (!nick) {
       Myapp.setGlobalState("error", "Please enter a nickname.");
       return;
     }
     connectWebSocket(nick);
+    Myapp.setGlobalState("name", nick);
     Myapp.navigate("/lobby");
   }
 
@@ -23,15 +31,17 @@ export default function Start() {
       E("input", {
         class: "nickname-input",
         placeholder: "Your nickname...",
-        value: name,
-        $input: (e) => Myapp.setGlobalState("name", e.target.value),
+        value: inputValue,
+        $input: (e) => {
+          inputValue = e.target.value;  // Update local input value only
+        },
         $keydown: (e) => {
           if (e.key === "Enter") {
             handleNickname();
           }
         },
       }),
-      error ? E("p", { class: "error-message" },).childs(error) : null,
+      error ? E("p", { class: "error-message" }).childs(error) : null,
       E("button", {
         class: "confirm-nickname",
         $click: () => {
@@ -41,3 +51,4 @@ export default function Start() {
     )
   );
 }
+
