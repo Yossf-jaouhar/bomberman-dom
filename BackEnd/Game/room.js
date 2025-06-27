@@ -30,6 +30,48 @@ class Room {
     }
   }
 
+  //player movement
+  movePlayer(name, direction) {
+    const player = this.players[name];
+    if (!player || !player.isAlive()) return;
+
+    const { x, y } = player.position;
+    let newX = x;
+    let newY = y;
+
+    if (direction === "up") newY -= 1;
+    if (direction === "down") newY += 1;
+    if (direction === "left") newX -= 1;
+    if (direction === "right") newX += 1;
+
+    // Check bounds
+    if (newX < 0 || newX >= this.map.columns || newY < 0 || newY >= this.map.rows) {
+      return;
+    }
+
+    // Check collision with map tiles
+    const tile = this.map.getTile(newY, newX);
+    if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
+      return;
+    }
+
+    // No collision → move the player
+    player.resetPosition(newX, newY);
+
+    // Broadcast new positions to all players
+    const playersPositions = {};
+    for (const p of Object.values(this.players)) {
+      playersPositions[p.name] = {
+        x: p.position.x,
+        y: p.position.y
+      };
+    }
+
+    this.broadcast("updatePlayers", {
+      playersPositions
+    });
+  }
+
   removePlayer(name) {
     delete this.players[name];
   }
@@ -48,7 +90,7 @@ class Room {
     this.RoomState = "waiting";
     this.Counter = 20;
 
-    this.broadcast("waiting", { counter: this.Counter }); 
+    this.broadcast("waiting", { counter: this.Counter });
 
     if (this.timeInt) return;
 
@@ -67,7 +109,7 @@ class Room {
     this.RoomState = "preparing";
     this.Counter = 10;
 
-    this.broadcast("preparing", { counter: this.Counter }); 
+    this.broadcast("preparing", { counter: this.Counter });
 
     if (this.timeInt) return;
 
