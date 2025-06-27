@@ -1,11 +1,8 @@
-class Map {
-
-
-
+export class Map {
     constructor(rows, columns, tileSize) {
         this.rows = rows;
-        this.columns = columns;     // number of columns (e.g. 15)
-        this.tileSize = tileSize;   // size of each tile in px (e.g. 40)
+        this.columns = columns;
+        this.tileSize = tileSize;
 
         this.tiles = []; // flat array representing the map grid
 

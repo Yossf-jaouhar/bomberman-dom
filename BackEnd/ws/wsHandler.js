@@ -1,5 +1,6 @@
 const { Server } = require("socket.io");
 const { game } = require("../Game/game");
+const { createGameMap } = require("../Game/mapHandler.js");
 
 function setupSocketIO(server) {
   console.log("Setting up Socket.IO...");
@@ -38,6 +39,11 @@ function setupSocketIO(server) {
         text: data.text,
       });
     });
+
+    socket.on("requestMap", () => {
+      const mapData = createGameMap();
+      socket.emit("mapData", mapData);
+    })
     
     //player movement 
     socket.on("move", (data) => {
