@@ -1,4 +1,5 @@
 
+// player.js
 class Player {
   constructor(name, socket) {
     this.name = name;
@@ -11,12 +12,19 @@ class Player {
     this.maxBombs = 1;
     this.explosionRange = 1;
 
-    this.powerUps = []; // Will hold bonuses when added
+    this.powerUps = [];
   }
-
 
   loseLife() {
     this.lives -= 1;
+    if (this.socket) {
+      this.socket.emit("lifeUpdate", {
+        lives: this.lives,
+        alive: this.isAlive()
+      });
+    }
+
+    return this.isAlive();
   }
 
   addPowerUp(type) {
