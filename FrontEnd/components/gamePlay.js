@@ -1,7 +1,10 @@
-const { default: Myapp } = require("../helper/appInstance");
+import { extractPlayersFromMap, renderMap } from "./map.js"
+import { tileMap, mapData } from "./tileMap.js"
 
 
-function GamePlay() {
+const mapInstance = new tileMap(mapData)
+const players = extractPlayersFromMap(mapInstance)
 
-    
+export function GamePlay() {
+  return renderMap(mapInstance, players)
 }

@@ -1,32 +1,9 @@
-let hookStates = [];
-let hookIndex = 0;
-
 let currentComponent = null;
 let currentDOMFunc = null;
 let root = null;
 
-// Hook system
-export function UseState(initialValue) {
-  const currentIndex = hookIndex;
-
-  if (hookStates[currentIndex] === undefined) {
-    hookStates[currentIndex] = initialValue;
-  }
-
-  function setState(newVal) {
-    hookStates[currentIndex] = newVal;
-    rerender();
-  }
-
-  const getState = () => hookStates[currentIndex];
-
-  hookIndex++;
-  return [getState, setState];
-}
-
 // Rendering entry point
 export function Render(input) {
-  hookIndex = 0;
   root = document.querySelector(".app");
 
   if (typeof input === "function") {
@@ -36,14 +13,6 @@ export function Render(input) {
   } else {
     return renderV(input);
   }
-}
-
-// Trigger virtual DOM re-render
-function rerender() {
-  hookIndex = 0;
-  const newVNode = currentDOMFunc();
-  MyNewPatch(root, currentComponent, newVNode);
-  currentComponent = newVNode;
 }
 
 // Virtual DOM element creator
