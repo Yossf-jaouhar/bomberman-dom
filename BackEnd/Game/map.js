@@ -1,4 +1,4 @@
-class Map {
+class GameMap {
 
 
 
@@ -84,3 +84,4 @@ class Map {
         }
     }
 }
+module.exports = GameMap;

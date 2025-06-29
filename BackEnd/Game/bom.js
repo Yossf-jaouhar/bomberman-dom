@@ -1,4 +1,4 @@
-let map = new Map(13, 15, 40);
+let map = new GameMap(13, 15, 40);
 let players = {
   "player1": { x: 1, y: 1, explosionRange: 1, maxBombs: 1, lives: 3 },
 };

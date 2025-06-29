@@ -188,11 +188,9 @@ export function MyNewPatch(root, oldN, newN, pos = 0) {
       if (key !== undefined && oldKeyMap.has(key)) {
         const [matchedOld, oldIdx] = oldKeyMap.get(key);
         usedIndices.add(oldIdx);
-        console.log('hahahaha', { domNode, matchedOld, newChild, oldIdx });
 
         MyNewPatch(domNode, matchedOld, newChild, oldIdx);
       } else {
-        console.log('huhuhuhhuhu');
 
         MyNewPatch(domNode, undefined, newChild, newIdx);
       }

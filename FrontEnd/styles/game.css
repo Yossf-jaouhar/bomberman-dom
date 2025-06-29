@@ -1,0 +1,60 @@
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  background: #222;
+  color: #fff;
+  padding: 10px;
+}
+
+.game-header .player-name {
+  font-weight: bold;
+}
+
+.game-header .player-lives {
+  font-weight: bold;
+}
+.map-grid {
+  border: 2px solid #333;
+  position: relative;
+}
+
+.tile {
+  width: 40px;
+  height: 40px;
+  background-size: cover;
+  border: 1px solid #333;
+}
+
+.tile.wall {
+  background-image: url("../images/wall.png");
+}
+
+.tile.block {
+  background-image: url("../images/block.png");
+}
+
+.tile.empty {
+  background-image: url("../images/floor.png");
+}
+
+.player {
+  background-size: cover;
+  position: absolute;
+}
+
+.player.bilal {
+  background-image: url("../images/bilal.png");
+}
+
+.player.l9r3 {
+  background-image: url("../images/l9r3.png");
+}
+
+.player.lbnita {
+  background-image: url("../images/lbnita.png");
+}
+
+.player.ndadr {
+  background-image: url("../images/ndadr.png");
+}

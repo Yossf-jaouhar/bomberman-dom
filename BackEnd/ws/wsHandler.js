@@ -7,8 +7,7 @@ function setupSocketIO(server) {
   const io = new Server(server);
 
   io.on("connection", (socket) => {
-
-
+    
 
     // Join the game
     const name = socket.handshake.query.name;
@@ -19,6 +18,10 @@ function setupSocketIO(server) {
     }
     const room = game.join(name, socket);
     console.log("joined", Object.keys(room.players).length);
+
+    //for testing with single PLayer 
+    room.startGame()
+
     room.broadcast("joined", {
       RoomState: room.RoomState,
       nofPlayers: Object.keys(room.players).length,
@@ -38,13 +41,20 @@ function setupSocketIO(server) {
         text: data.text,
       });
     });
-    
-    //player movement 
-    socket.on("move", (data) => {
-      const dir = data.direction;
-      room.movePlayer(name, dir);
-    })
 
+    socket.on("placeBomb", () => {
+      room.placeBomb(name);
+    });
+    
+    socket.on("pickupPowerUp", (data) => {
+      room.pickupPowerUp(name, data.x, data.y);
+    });
+    //movement
+    socket.on("move", (data) => {
+      console.log('move requested ! ' ,  data);
+      const dir = data;
+      room.movePlayer(name, dir);
+    });
 
     // Handle messages
     socket.on("message", (message) => {
