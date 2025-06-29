@@ -36,6 +36,7 @@ export default class App {
     }
 
     const setState = newVal => {
+      
       if (typeof newVal === 'function') {
         this.hookStates[currentIndex] = newVal(this.hookStates[currentIndex]);
       } else {

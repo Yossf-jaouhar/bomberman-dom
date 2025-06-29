@@ -1,41 +1,11 @@
 import { getSocket } from "../ws/wsHandler.js";
-import Myapp from "../helper/appInstance.js";
+import Myapp from "./appInstance.js";
 
-export default function usePlayerMovement(currentPlayer) {
+let listenersInitialized = false;
+
+export default function usePlayerMovement(currentPlayer, setPlayers) {
   const socket = getSocket();
   const [activeDirection, setActiveDirection] = Myapp.useState(null);
-
-  let intervalId = null;
-
-  function startMoving(direction) {
-    if (activeDirection()) return;
-
-    setActiveDirection(direction);
-
-    intervalId = setInterval(() => {
-      if (!currentPlayer) return;
-
-      const speed = currentPlayer.speed || 1;
-
-      let dx = 0;
-      let dy = 0;
-
-      if (direction === "up") dy = -speed;
-      else if (direction === "down") dy = speed;
-      else if (direction === "left") dx = -speed;
-      else if (direction === "right") dx = speed;
-
-      socket.emit("move", { dx, dy });
-    }, 100);
-  }
-
-  function stopMoving() {
-    setActiveDirection(null);
-    if (intervalId) {
-      clearInterval(intervalId);
-      intervalId = null;
-    }
-  }
 
   function handleKeyDown(e) {
     if (activeDirection()) return;
@@ -48,18 +18,22 @@ export default function usePlayerMovement(currentPlayer) {
 
     if (dir) {
       e.preventDefault();
-      startMoving(dir);
+      setActiveDirection(dir);
+
+      socket.emit("move", dir);
+    }
+    if (e.code === "Space") {
+      socket.emit("placeBomb");
     }
   }
 
   function handleKeyUp() {
-    stopMoving();
+    setActiveDirection(null);
   }
 
-  // Remove old listeners first
-  window.removeEventListener("keydown", handleKeyDown);
-  window.removeEventListener("keyup", handleKeyUp);
-
-  window.addEventListener("keydown", handleKeyDown);
-  window.addEventListener("keyup", handleKeyUp);
+  if (!listenersInitialized) {
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    listenersInitialized = true;
+  }
 }
