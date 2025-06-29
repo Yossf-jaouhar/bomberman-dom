@@ -7,7 +7,7 @@ function setupSocketIO(server) {
   const io = new Server(server);
 
   io.on("connection", (socket) => {
-    
+
 
     // Join the game
     const name = socket.handshake.query.name;
@@ -45,15 +45,12 @@ function setupSocketIO(server) {
     socket.on("placeBomb", () => {
       room.placeBomb(name);
     });
-    
+
     socket.on("pickupPowerUp", (data) => {
       room.pickupPowerUp(name, data.x, data.y);
     });
-    //movement
-    socket.on("move", (data) => {
-      console.log('move requested ! ' ,  data);
-      const dir = data;
-      room.movePlayer(name, dir);
+    socket.on("move", (direction) => {
+      room.movePlayer(name, direction);
     });
 
     // Handle messages

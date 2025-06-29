@@ -144,6 +144,7 @@ class Room {
 
   movePlayer(name, direction) {
     const player = this.players[name];
+
     if (!player || !player.isAlive()) return;
 
     const { x, y } = player.position;
@@ -157,18 +158,22 @@ class Room {
 
     // Check bounds
     if (newX < 0 || newX >= this.map.columns || newY < 0 || newY >= this.map.rows) {
+      console.log("can't go beyond boundries");
+
       return;
     }
-
+    
     // Check collision with map tiles
     const tile = this.map.getTile(newY, newX);
     if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
+      console.log("can't go over wall or block");
       return;
     }
 
     // No collision → move the player
     player.resetPosition(newX, newY);
-
+    console.log("player position reseted ! ",player.position);
+    
     // Broadcast new positions to all players
     const playersPositions = {};
     for (const p of Object.values(this.players)) {
@@ -177,10 +182,11 @@ class Room {
         y: p.position.y
       };
     }
-
+    
     this.broadcast("updatePlayers", {
       playersPositions
     });
+    console.log("broadcast succeded");
   }
 
   placeBomb(name) {
@@ -190,10 +196,7 @@ class Room {
     const { x, y } = player.position;
 
     // Check if bomb already exists at that tile
-    if (this.isBombAt(x, y)) {
-      console.log(`Bomb already at ${x},${y}`);
-      return;
-    }
+    
 
     // Check max bombs
     const bombsByPlayer = this.bombs.filter(b => b.owner === name);
