@@ -1,20 +1,21 @@
 import { E } from "../frameWork/DOM.js";
 
 export default function PlayerDivs(players, tileSize) {
-  return players.map((p) => {
-    const left = p.x * tileSize;
-    const top = p.y * tileSize;
-
-    return E("div", {
-      class: `player ${p.avatar}`,
+  return players.map((player) =>
+    E("div", {
+      class: `player player-${player.name} ${player.avatar}`,
+      key :  `player ${player.avatar}`,
       style: `
-        position: absolute;
-        left: ${left}px;
-        top: ${top}px;
         width: ${tileSize}px;
         height: ${tileSize}px;
+        position: absolute;
+        left: ${player.pixelX}px;    // <-- CHANGED
+        top: ${player.pixelY}px;     // <-- CHANGED
+        background-image: url('./images/${player.avatar}.png');
+        background-size: contain;
+        background-repeat: no-repeat;
       `,
-      key: p.name
-    });
-  });
+    })
+    
+  );
 }

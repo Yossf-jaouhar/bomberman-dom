@@ -1,9 +1,10 @@
 const GameMap = require('./map');
 const Player = require('./player');
 const POWERUPS = ["Bomb", "Flame", "Speed"];
+
 class Room {
   constructor() {
-    this.RoomState = null; // "solo", "waiting", "preparing", "started"
+    this.RoomState = null;
     this.players = {};
     this.Counter = null;
     this.timeInt = null;
@@ -61,7 +62,7 @@ class Room {
       if (this.Counter <= 0) {
         clearInterval(this.timeInt);
         this.timeInt = null;
-        console.log("waiting finished !");
+        console.log("waiting finished!");
         this.startPreparing();
       }
     }, 1000);
@@ -89,15 +90,14 @@ class Room {
   startGame() {
     this.RoomState = "started";
 
-    // Generate the map
     this.map = new GameMap(13, 15, 40);
     this.map.generateMap();
 
     const startPositions = [
-      { x: 1, y: 1 },                                 // top-left
-      { x: this.map.columns - 2, y: 1 },              // top-right
-      { x: 1, y: this.map.rows - 2 },                 // bottom-left
-      { x: this.map.columns - 2, y: this.map.rows - 2 } // bottom-right
+      { x: 1, y: 1 },
+      { x: this.map.columns - 2, y: 1 },
+      { x: 1, y: this.map.rows - 2 },
+      { x: this.map.columns - 2, y: this.map.rows - 2 }
     ];
 
     let i = 0;
@@ -112,7 +112,6 @@ class Room {
       i++;
     }
 
-    // Prepare public data
     const publicPlayersData = {};
     for (const player of Object.values(this.players)) {
       publicPlayersData[player.name] = {
@@ -122,13 +121,11 @@ class Room {
       };
     }
 
-    // Broadcast safe data
     this.broadcast("gameStart", {
       map: this.map.tiles,
       players: publicPlayersData
     });
 
-    // Send private data individually
     for (const player of Object.values(this.players)) {
       player.socket.emit("playerData", {
         name: player.name,
@@ -137,56 +134,69 @@ class Room {
         explosionRange: player.explosionRange,
         speed: player.speed,
         avatar: player.avatar,
-        position: player.position
+        position: {
+          x: player.position.x,
+          y: player.position.y
+        },
+        pixelPosition: {
+          x: player.pixelPosition.x,
+          y: player.pixelPosition.y
+        }
       });
     }
   }
 
-  movePlayer(name, direction) {
+  movePlayerPixel(name, dx, dy) {
     const player = this.players[name];
-
     if (!player || !player.isAlive()) return;
 
-    const { x, y } = player.position;
-    let newX = x;
-    let newY = y;
+    const oldX = player.pixelPosition.x;
+    const oldY = player.pixelPosition.y;
 
-    if (direction === "up") newY -= 1;
-    if (direction === "down") newY += 1;
-    if (direction === "left") newX -= 1;
-    if (direction === "right") newX += 1;
+    let newX = oldX + dx;
+    let newY = oldY + dy;
 
-    // Check bounds
-    if (newX < 0 || newX >= this.map.columns || newY < 0 || newY >= this.map.rows) {
-      console.log("can't go beyond boundries");
+    const newTileX = Math.floor(newX / 40);
+    const newTileY = Math.floor(newY / 40);
 
+    if (
+      newTileX < 0 ||
+      newTileX >= this.map.columns ||
+      newTileY < 0 ||
+      newTileY >= this.map.rows
+    ) {
       return;
     }
-    
-    // Check collision with map tiles
-    const tile = this.map.getTile(newY, newX);
+
+    const tile = this.map.getTile(newTileY, newTileX);
     if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
-      console.log("can't go over wall or block");
       return;
     }
 
-    // No collision → move the player
-    player.resetPosition(newX, newY);
-    console.log("player position reseted ! ",player.position);
-    
-    // Broadcast new positions to all players
+    player.pixelPosition.x = newX;
+    player.pixelPosition.y = newY;
+
+    if (
+      newTileX !== player.position.x ||
+      newTileY !== player.position.y
+    ) {
+      player.position.x = newTileX;
+      player.position.y = newTileY;
+      // Check power-ups here if desired
+    }
+
     const playersPositions = {};
     for (const p of Object.values(this.players)) {
       playersPositions[p.name] = {
-        x: p.position.x,
-        y: p.position.y
+        pixelX: p.pixelPosition.x,
+        pixelY: p.pixelPosition.y,
+        tileX: p.position.x,
+        tileY: p.position.y,
+        avatar: p.avatar
       };
     }
-    
-    this.broadcast("updatePlayers", {
-      playersPositions
-    });
-    console.log("broadcast succeded");
+
+    this.broadcast("updatePlayers", { playersPositions });
   }
 
   placeBomb(name) {
@@ -195,17 +205,12 @@ class Room {
 
     const { x, y } = player.position;
 
-    // Check if bomb already exists at that tile
-    
-
-    // Check max bombs
     const bombsByPlayer = this.bombs.filter(b => b.owner === name);
     if (bombsByPlayer.length >= player.maxBombs) {
       console.log(`${name} has no bombs left`);
       return;
     }
 
-    // Place bomb
     const bomb = {
       x,
       y,
@@ -220,18 +225,16 @@ class Room {
       owner: name
     });
 
-    // Set timer to explode
     setTimeout(() => {
       this.explodeBomb(bomb);
     }, 2000);
   }
+
   explodeBomb(bomb) {
     console.log(`Bomb at ${bomb.x},${bomb.y} exploding`);
-
-    // Remove bomb from bombs array
+    let mapChanged = false;
     this.bombs = this.bombs.filter(b => b !== bomb);
 
-    // Determine blast tiles
     const blastTiles = [];
     blastTiles.push({ x: bomb.x, y: bomb.y });
 
@@ -263,8 +266,8 @@ class Room {
 
         if (tile === this.map.TILE_BLOCK) {
           this.map.setTile(checkY, checkX, this.map.TILE_EMPTY);
+          mapChanged = true;
 
-          // Chance to drop a power-up
           if (Math.random() < 0.3) {
             const type = POWERUPS[Math.floor(Math.random() * POWERUPS.length)];
             this.powerUps.push({
@@ -279,14 +282,11 @@ class Room {
               type
             });
           }
-
           break;
         }
-
       }
     }
 
-    // Damage players
     for (const player of Object.values(this.players)) {
       for (const t of blastTiles) {
         if (player.position.x === t.x && player.position.y === t.y) {
@@ -302,10 +302,16 @@ class Room {
     }
 
     this.broadcast("bombExploded", {
-      bomb: { x: bomb.x, y: bomb.y, owner: bomb.owner },
-      updatedMap: this.map.tiles
+      bomb: { x: bomb.x, y: bomb.y, owner: bomb.owner }
     });
+
+    if (mapChanged) {
+      this.broadcast("mapChange", {
+        map: this.map.tiles
+      });
+    }
   }
+
   pickupPowerUp(name, x, y) {
     const powerUpIndex = this.powerUps.findIndex(p => p.x === x && p.y === y);
     if (powerUpIndex === -1) {
@@ -318,7 +324,6 @@ class Room {
     if (!player || !player.isAlive()) return;
 
     player.addPowerUp(powerUp.type);
-
     this.powerUps.splice(powerUpIndex, 1);
 
     this.broadcast("powerUpPicked", {

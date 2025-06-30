@@ -116,12 +116,15 @@ export function MyNewPatch(root, oldN, newN, pos = 0) {
 
   // New node only
   if (!oldN) {
+    console.log("will add");
+    
     root.appendChild(renderV(newN));
     return;
   }
 
   // Old node only (remove it)
   if (!newN) {
+    console.log("will delete");
     if (root.childNodes[pos]) {
       root.removeChild(root.childNodes[pos]);
     }
