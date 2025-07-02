@@ -55,7 +55,7 @@ export default function Lobby() {
         console.log("waiting received", data);
         setRoomState("waiting");
         setNoOfPlayers(2)
-        startCountdown(data.Counter);
+        //startCountdown(data.Counter);
     });
 
     socket.on("preparing", (data) => {
