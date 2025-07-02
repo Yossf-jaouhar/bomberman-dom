@@ -50,9 +50,22 @@ function setupSocketIO(server) {
       room.pickupPowerUp(name, data.x, data.y);
     });
 
+    socket.on("startMoving", (data) => {
+      console.log("move requested", data);
+      room.setPlayerDirection(name, data.direction);
+    });
+
+
+    socket.on("stopMoving", () => {
+      room.setPlayerDirection(name, null);
+    });
+
+
+
+
     socket.on("move", (data) => {
-      console.log("move requested" , data);
-      
+      console.log("move requested", data);
+
       room.movePlayerPixel(name, data.dx, data.dy);
     });
 

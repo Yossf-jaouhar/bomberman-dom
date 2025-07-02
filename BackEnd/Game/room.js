@@ -13,80 +13,7 @@ class Room {
     this.bombs = [];
     this.powerUps = [];
   }
-
-  hasPlayer(name) {
-    return this.players.hasOwnProperty(name);
-  }
-
-  addPlayer(name, socket) {
-    const player = new Player(name, socket);
-    this.players[name] = player;
-
-    const playerCount = Object.keys(this.players).length;
-
-    if (playerCount === 1) {
-      this.RoomState = "solo";
-    }
-    if (playerCount === 2) {
-      this.startWaiting();
-    }
-    if (playerCount === 4) {
-      this.startPreparing();
-    }
-  }
-
-  removePlayer(name) {
-    delete this.players[name];
-  }
-
-  broadcast(event, data) {
-    for (const player of Object.values(this.players)) {
-      if (!player.socket || typeof player.socket.emit !== "function") {
-        console.warn(`Invalid socket for ${player.name}, skipping...`);
-        continue;
-      }
-      player.socket.emit(event, data);
-    }
-  }
-
-  startWaiting() {
-    this.RoomState = "waiting";
-    this.Counter = 20;
-
-    this.broadcast("waiting", { counter: this.Counter });
-
-    if (this.timeInt) return;
-
-    this.timeInt = setInterval(() => {
-      this.Counter--;
-      if (this.Counter <= 0) {
-        clearInterval(this.timeInt);
-        this.timeInt = null;
-        console.log("waiting finished!");
-        this.startPreparing();
-      }
-    }, 1000);
-  }
-
-  startPreparing() {
-    this.RoomState = "preparing";
-    this.Counter = 10;
-
-    this.broadcast("preparing", { counter: this.Counter });
-
-    if (this.timeInt) return;
-
-    this.timeInt = setInterval(() => {
-      this.Counter--;
-      if (this.Counter <= 0) {
-        clearInterval(this.timeInt);
-        this.timeInt = null;
-        console.log("Preparing finished");
-        this.startGame();
-      }
-    }, 1000);
-  }
-
+  
   startGame() {
     this.RoomState = "started";
 
@@ -144,11 +71,69 @@ class Room {
         }
       });
     }
+
+    setInterval(() => {
+      this.update();
+    }, 1000 / 60);
+  }
+
+  setPlayerDirection(name, direction) {
+    const player = this.players[name];
+    if (!player || !player.isAlive()) return;
+
+    player.movingDirection = direction;
+  }
+
+  update() {
+    let anyPlayerMoved = false;
+
+    for (const player of Object.values(this.players)) {
+      if (player.movingDirection) {
+        let dx = 0;
+        let dy = 0;
+        const speed = 4;
+
+        switch (player.movingDirection) {
+          case "up":
+            dy -= speed;
+            break;
+          case "down":
+            dy += speed;
+            break;
+          case "left":
+            dx -= speed;
+            break;
+          case "right":
+            dx += speed;
+            break;
+        }
+
+        const moved = this.movePlayerPixel(player.name, dx, dy);
+        if (moved) {
+          anyPlayerMoved = true;
+        }
+      }
+    }
+
+    if (anyPlayerMoved) {
+      const playersPositions = {};
+      for (const p of Object.values(this.players)) {
+        playersPositions[p.name] = {
+          pixelX: p.pixelPosition.x,
+          pixelY: p.pixelPosition.y,
+          tileX: p.position.x,
+          tileY: p.position.y,
+          avatar: p.avatar
+        };
+      }
+
+      this.broadcast("updatePlayers", { playersPositions });
+    }
   }
 
   movePlayerPixel(name, dx, dy) {
     const player = this.players[name];
-    if (!player || !player.isAlive()) return;
+    if (!player || !player.isAlive()) return false;
 
     const oldX = player.pixelPosition.x;
     const oldY = player.pixelPosition.y;
@@ -165,13 +150,17 @@ class Room {
       newTileY < 0 ||
       newTileY >= this.map.rows
     ) {
-      return;
+      return false;
     }
 
     const tile = this.map.getTile(newTileY, newTileX);
     if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
-      return;
+      return false;
     }
+
+    const positionChanged =
+      newX !== oldX ||
+      newY !== oldY;
 
     player.pixelPosition.x = newX;
     player.pixelPosition.y = newY;
@@ -185,20 +174,14 @@ class Room {
       // Check power-ups here if desired
     }
 
-    const playersPositions = {};
-    for (const p of Object.values(this.players)) {
-      playersPositions[p.name] = {
-        pixelX: p.pixelPosition.x,
-        pixelY: p.pixelPosition.y,
-        tileX: p.position.x,
-        tileY: p.position.y,
-        avatar: p.avatar
-      };
-    }
-
-    this.broadcast("updatePlayers", { playersPositions });
+    return positionChanged;
   }
 
+  broadcast(event, data) {
+    for (const player of Object.values(this.players)) {
+      player.socket.emit(event, data);
+    }
+  }
   placeBomb(name) {
     const player = this.players[name];
     if (!player || !player.isAlive()) return;
@@ -334,6 +317,80 @@ class Room {
     });
 
     console.log(`${name} picked up ${powerUp.type}`);
+  }
+
+
+  hasPlayer(name) {
+    return this.players.hasOwnProperty(name);
+  }
+
+  addPlayer(name, socket) {
+    const player = new Player(name, socket);
+    this.players[name] = player;
+
+    const playerCount = Object.keys(this.players).length;
+
+    if (playerCount === 1) {
+      this.RoomState = "solo";
+    }
+    if (playerCount === 2) {
+      this.startWaiting();
+    }
+    if (playerCount === 4) {
+      this.startPreparing();
+    }
+  }
+
+  removePlayer(name) {
+    delete this.players[name];
+  }
+
+  broadcast(event, data) {
+    for (const player of Object.values(this.players)) {
+      if (!player.socket || typeof player.socket.emit !== "function") {
+        console.warn(`Invalid socket for ${player.name}, skipping...`);
+        continue;
+      }
+      player.socket.emit(event, data);
+    }
+  }
+
+  startWaiting() {
+    this.RoomState = "waiting";
+    this.Counter = 20;
+
+    this.broadcast("waiting", { counter: this.Counter });
+
+    if (this.timeInt) return;
+
+    this.timeInt = setInterval(() => {
+      this.Counter--;
+      if (this.Counter <= 0) {
+        clearInterval(this.timeInt);
+        this.timeInt = null;
+        console.log("waiting finished!");
+        this.startPreparing();
+      }
+    }, 1000);
+  }
+
+  startPreparing() {
+    this.RoomState = "preparing";
+    this.Counter = 10;
+
+    this.broadcast("preparing", { counter: this.Counter });
+
+    if (this.timeInt) return;
+
+    this.timeInt = setInterval(() => {
+      this.Counter--;
+      if (this.Counter <= 0) {
+        clearInterval(this.timeInt);
+        this.timeInt = null;
+        console.log("Preparing finished");
+        this.startGame();
+      }
+    }, 1000);
   }
 }
 

@@ -2,15 +2,10 @@ class Player {
   constructor(name, socket) {
     this.name = name;
     this.socket = socket;
-
     this.lives = 3;
-
-    // Tile coordinates (grid cells)
-    this.position = { x: 0, y: 0 };
-
-    // Pixel coordinates
-    this.pixelPosition = { x: 0, y: 0 };
-
+    this.position = { x: 1, y: 1 };
+    this.pixelPosition = {};
+    this.movingDirection = null;
     this.speed = 1;
     this.maxBombs = 1;
     this.explosionRange = 1;

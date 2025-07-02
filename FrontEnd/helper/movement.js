@@ -1,63 +1,57 @@
 // usePlayerMovement.js
 import { getSocket } from "../ws/wsHandler.js";
-import Myapp from "./appInstance.js";
 
-let  listenersInitialized  =false
-export default function usePlayerMovement(currentPlayer, setPlayers, gameOver) {
+let listenersInitialized = false;
+
+// Keep pressedKeys as a module-level variable
+let pressedKeys = [];
+
+export default function usePlayerMovement() {
   const socket = getSocket();
 
-  const [keysHeld, setKeysHeld] = Myapp.useState({
-    up: false,
-    down: false,
-    left: false,
-    right: false
-  });
+  const keyToDirection = {
+    ArrowUp: "up",
+    w: "up",
+    ArrowDown: "down",
+    s: "down",
+    ArrowLeft: "left",
+    a: "left",
+    ArrowRight: "right",
+    d: "right"
+  };
 
   function handleKeyDown(e) {
-    let changed = false;
+    const direction = keyToDirection[e.key];
 
-    if (e.key === "ArrowUp" || e.key === "w") {
-      keysHeld().up = true;
-      changed = true;
-    } else if (e.key === "ArrowDown" || e.key === "s") {
-      keysHeld().down = true;
-      changed = true;
-    } else if (e.key === "ArrowLeft" || e.key === "a") {
-      keysHeld().left = true;
-      changed = true;
-    } else if (e.key === "ArrowRight" || e.key === "d") {
-      keysHeld().right = true;
-      changed = true;
+    if (direction) {
+      e.preventDefault();
+
+      if (!pressedKeys.includes(direction)) {
+        pressedKeys.push(direction);
+
+        const newDirection = pressedKeys[pressedKeys.length - 1];
+
+        socket.emit("startMoving", { direction: newDirection });
+      }
     } else if (e.code === "Space") {
       socket.emit("placeBomb");
-    }
-
-    if (changed) {
-      e.preventDefault();
-      setKeysHeld({ ...keysHeld() });
     }
   }
 
   function handleKeyUp(e) {
-    let changed = false;
-
-    if (e.key === "ArrowUp" || e.key === "w") {
-      keysHeld().up = false;
-      changed = true;
-    } else if (e.key === "ArrowDown" || e.key === "s") {
-      keysHeld().down = false;
-      changed = true;
-    } else if (e.key === "ArrowLeft" || e.key === "a") {
-      keysHeld().left = false;
-      changed = true;
-    } else if (e.key === "ArrowRight" || e.key === "d") {
-      keysHeld().right = false;
-      changed = true;
-    }
-
-    if (changed) {
+    const direction = keyToDirection[e.key];
+    if (direction) {
       e.preventDefault();
-      setKeysHeld({ ...keysHeld() });
+
+      if (pressedKeys.includes(direction)) {
+        pressedKeys = pressedKeys.filter(k => k !== direction);
+        if (pressedKeys.length === 0) {
+          socket.emit("stopMoving");
+        } else {
+          const newDirection = pressedKeys[pressedKeys.length - 1];
+          socket.emit("startMoving", { direction: newDirection });
+        }
+      }
     }
   }
 
@@ -66,25 +60,4 @@ export default function usePlayerMovement(currentPlayer, setPlayers, gameOver) {
     window.addEventListener("keyup", handleKeyUp);
     listenersInitialized = true;
   }
-
-  // Movement loop
-  requestAnimationFrame(function tick() {
-    if (gameOver && gameOver()) return;
-
-    let dx = 0;
-    let dy = 0;
-
-    const speed =  4;
-
-    if (keysHeld().up) dy -= speed;
-    if (keysHeld().down) dy += speed;
-    if (keysHeld().left) dx -= speed;
-    if (keysHeld().right) dx += speed;
-
-    if (dx !== 0 || dy !== 0) {
-      socket.emit("move", { dx, dy });
-    }
-
-    requestAnimationFrame(tick);
-  });
 }

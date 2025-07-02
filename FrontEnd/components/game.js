@@ -26,7 +26,7 @@ export default function Game() {
   const [gameOver, setGameOver] = Myapp.useState(false);
 
   // Plug in the movement hook
-  usePlayerMovement(currentPlayer, setPlayers, gameOver);
+  usePlayerMovement();
 
   socket.off("gameStart");
   socket.off("playerData");
