@@ -6,7 +6,8 @@ class Room {
   constructor() {
     this.RoomState = null;
     this.players = {};
-    this.Counter = null;
+    this.Counter = 5;
+    this.counter = 3;
     this.timeInt = null;
     this.chatMessages = [];
     this.map = null;
@@ -414,7 +415,7 @@ class Room {
     if (playerCount === 1) {
       this.RoomState = "solo";
     }
-    if (playerCount === 2) {
+    if (playerCount  > 1) {
       this.startWaiting();
     }
     if (playerCount === 4) {
@@ -438,14 +439,13 @@ class Room {
 
   startWaiting() {
     this.RoomState = "waiting";
-    this.Counter = 20;
-
-    this.broadcast("waiting", { counter: this.Counter });
-
+    
+    
     if (this.timeInt) return;
-
+    
     this.timeInt = setInterval(() => {
       this.Counter--;
+      this.broadcast("waiting", { Counter: this.Counter });
       if (this.Counter <= 0) {
         clearInterval(this.timeInt);
         this.timeInt = null;
@@ -457,15 +457,14 @@ class Room {
 
   startPreparing() {
     this.RoomState = "preparing";
-    this.Counter = 10;
 
-    this.broadcast("preparing", { counter: this.Counter });
-
+    
     if (this.timeInt) return;
-
+    
     this.timeInt = setInterval(() => {
-      this.Counter--;
-      if (this.Counter <= 0) {
+      this.counter--;
+      this.broadcast("preparing", { counter: this.counter });
+      if (this.counter <= 0) {
         clearInterval(this.timeInt);
         this.timeInt = null;
         console.log("Preparing finished");
