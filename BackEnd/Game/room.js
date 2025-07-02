@@ -173,27 +173,23 @@ class Room {
 
     if (dx !== 0) {
       if (dx > 0) {
-        // moving right
         const rightEdge = player.pixelPosition.x + TILE_SIZE + dx;
         const rightTile = Math.floor(rightEdge / TILE_SIZE);
 
         if (rightTile !== player.position.x) {
           const tile = this.map.getTile(player.position.y, rightTile);
           if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
-            // Clamp right edge to boundary of current tile
             newX = (player.position.x + 1) * TILE_SIZE - TILE_SIZE;
             dx = 0;
           }
         }
       } else {
-        // moving left
         const leftEdge = player.pixelPosition.x + dx;
         const leftTile = Math.floor(leftEdge / TILE_SIZE);
 
         if (leftTile !== player.position.x) {
           const tile = this.map.getTile(player.position.y, leftTile);
           if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
-            // Clamp left edge to boundary of current tile
             newX = player.position.x * TILE_SIZE;
             dx = 0;
           }
@@ -203,7 +199,6 @@ class Room {
 
     if (dy !== 0) {
       if (dy > 0) {
-        // moving down
         const bottomEdge = player.pixelPosition.y + TILE_SIZE + dy;
         const downTile = Math.floor(bottomEdge / TILE_SIZE);
 
@@ -215,7 +210,6 @@ class Room {
           }
         }
       } else {
-        // moving up
         const topEdge = player.pixelPosition.y + dy;
         const upTile = Math.floor(topEdge / TILE_SIZE);
 
@@ -232,7 +226,6 @@ class Room {
     newX += dx;
     newY += dy;
 
-    // Determine tile after move
     const newTileX = Math.floor((newX + TILE_SIZE / 2) / TILE_SIZE);
     const newTileY = Math.floor((newY + TILE_SIZE / 2) / TILE_SIZE);
 
@@ -242,6 +235,16 @@ class Room {
     if (newTileX !== player.position.x || newTileY !== player.position.y) {
       player.position.x = newTileX;
       player.position.y = newTileY;
+    }
+
+    // ✅ CHECK FOR POWER-UP PICKUP
+    const powerUpIndex = this.powerUps.findIndex(
+      (p) => p.x === player.position.x && p.y === player.position.y
+    );
+
+    if (powerUpIndex !== -1) {
+      const powerUp = this.powerUps[powerUpIndex];
+      this.pickupPowerUp(name, powerUp.x, powerUp.y);
     }
 
     if (newX !== oldX || newY !== oldY) {
@@ -255,41 +258,31 @@ class Room {
 
 
 
-  broadcast(event, data) {
-    for (const player of Object.values(this.players)) {
-      player.socket.emit(event, data);
+
+
+  pickupPowerUp(name, x, y) {
+    const powerUpIndex = this.powerUps.findIndex(p => p.x === x && p.y === y);
+    if (powerUpIndex === -1) {
+      console.log(`No power-up at ${x},${y}`);
+      return;
     }
-  }
-  placeBomb(name) {
+    const powerUp = this.powerUps[powerUpIndex];
     const player = this.players[name];
     if (!player || !player.isAlive()) return;
 
-    const { x, y } = player.position;
+    player.addPowerUp(powerUp.type);
+    this.powerUps.splice(powerUpIndex, 1);
 
-    const bombsByPlayer = this.bombs.filter(b => b.owner === name);
-    if (bombsByPlayer.length >= player.maxBombs) {
-      console.log(`${name} has no bombs left`);
-      return;
-    }
-
-    const bomb = {
+    this.broadcast("powerUpPicked", {
+      name,
+      type: powerUp.type,
       x,
-      y,
-      owner: name,
-      range: player.explosionRange
-    };
-    this.bombs.push(bomb);
-
-    this.broadcast("bombPlaced", {
-      x,
-      y,
-      owner: name
+      y
     });
 
-    setTimeout(() => {
-      this.explodeBomb(bomb);
-    }, 2000);
+    console.log(`${name} picked up ${powerUp.type}`);
   }
+
 
   explodeBomb(bomb) {
     console.log(`Bomb at ${bomb.x},${bomb.y} exploding`);
@@ -373,33 +366,43 @@ class Room {
     }
   }
 
-  pickupPowerUp(name, x, y) {
-    const powerUpIndex = this.powerUps.findIndex(p => p.x === x && p.y === y);
-    if (powerUpIndex === -1) {
-      console.log(`No power-up at ${x},${y}`);
-      return;
+  hasPlayer(name) {
+    return this.players.hasOwnProperty(name);
+  }
+  broadcast(event, data) {
+    for (const player of Object.values(this.players)) {
+      player.socket.emit(event, data);
     }
-
-    const powerUp = this.powerUps[powerUpIndex];
+  }
+  placeBomb(name) {
     const player = this.players[name];
     if (!player || !player.isAlive()) return;
 
-    player.addPowerUp(powerUp.type);
-    this.powerUps.splice(powerUpIndex, 1);
+    const { x, y } = player.position;
 
-    this.broadcast("powerUpPicked", {
-      name,
-      type: powerUp.type,
+    const bombsByPlayer = this.bombs.filter(b => b.owner === name);
+    if (bombsByPlayer.length >= player.maxBombs) {
+      console.log(`${name} has no bombs left`);
+      return;
+    }
+
+    const bomb = {
       x,
-      y
+      y,
+      owner: name,
+      range: player.explosionRange
+    };
+    this.bombs.push(bomb);
+
+    this.broadcast("bombPlaced", {
+      x,
+      y,
+      owner: name
     });
 
-    console.log(`${name} picked up ${powerUp.type}`);
-  }
-
-
-  hasPlayer(name) {
-    return this.players.hasOwnProperty(name);
+    setTimeout(() => {
+      this.explodeBomb(bomb);
+    }, 2000);
   }
 
   addPlayer(name, socket) {
