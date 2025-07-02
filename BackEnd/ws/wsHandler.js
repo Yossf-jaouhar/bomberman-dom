@@ -20,7 +20,7 @@ function setupSocketIO(server) {
     console.log("joined", Object.keys(room.players).length);
 
     //for testing with single PLayer 
-    //room.startGame()
+    room.startGame()
 
     room.broadcast("joined", {
       RoomState: room.RoomState,
