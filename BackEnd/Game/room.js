@@ -13,7 +13,7 @@ class Room {
     this.bombs = [];
     this.powerUps = [];
   }
-  
+
   startGame() {
     this.RoomState = "started";
 
@@ -85,26 +85,25 @@ class Room {
   }
 
   update() {
-    let anyPlayerMoved = false;
 
+    let anyPlayerMoved = false;
     for (const player of Object.values(this.players)) {
       if (player.movingDirection) {
         let dx = 0;
         let dy = 0;
-        const speed = 4;
 
         switch (player.movingDirection) {
           case "up":
-            dy -= speed;
+            dy -= player.speed;
             break;
           case "down":
-            dy += speed;
+            dy += player.speed;
             break;
           case "left":
-            dx -= speed;
+            dx -= player.speed;
             break;
           case "right":
-            dx += speed;
+            dx += player.speed;
             break;
         }
 
@@ -132,35 +131,73 @@ class Room {
   }
 
   movePlayerPixel(name, dx, dy) {
-    const player = this.players[name];
-    if (!player || !player.isAlive()) return false;
+    const player = this.players[name]
+    if (!player || !player.isAlive()) return false
 
     const oldX = player.pixelPosition.x;
     const oldY = player.pixelPosition.y;
 
-    let newX = oldX + dx;
-    let newY = oldY + dy;
+    const TILE_SIZE = 40;
+    const CENTER_THRESHOLD = TILE_SIZE * 0.5;
 
-    const newTileX = Math.floor(newX / 40);
-    const newTileY = Math.floor(newY / 40);
+    const centerX = player.position.x * TILE_SIZE + TILE_SIZE / 2;
+    const centerY = player.position.y * TILE_SIZE + TILE_SIZE / 2;
+
+    // Determine if the player is changing axis
+    const newAxis = (dx !== 0) ? "x" : (dy !== 0) ? "y" : null;
+
+    let isChangingAxis = false;
+    if (player.lastAxis && newAxis && player.lastAxis !== newAxis) {
+      isChangingAxis = true;
+      console.log('tesr');
+      
+      // player.lastAxis = newAxis
+    }
+
+    if (isChangingAxis) {
+      const distFromCenterX = Math.abs(oldX - centerX);
+      const distFromCenterY = Math.abs(oldY - centerY);
+
+      if (distFromCenterX > CENTER_THRESHOLD || distFromCenterY > CENTER_THRESHOLD) {
+        return false; // too far, block
+      } else {
+        // snap to center and stop movement this frame
+        player.pixelPosition.x = centerX;
+        player.pixelPosition.y = centerY;
+
+        // Update tile position too:
+        player.position.x = Math.floor(centerX / TILE_SIZE);
+        player.position.y = Math.floor(centerY / TILE_SIZE);
+
+        // update lastAxis to newAxis since axis switched now
+        player.lastAxis = newAxis;
+
+        // Don't move this frame after snapping
+        return true;
+      }
+    }
+
+    // Movement allowed
+    let newX = player.pixelPosition.x + dx;
+    let newY = player.pixelPosition.y + dy;
+
+    let newTileX = dx > 0 ? Math.ceil(newX / TILE_SIZE) :
+      dx < 0 ? Math.floor(newX / TILE_SIZE) :
+        player.position.x;
+
+    let newTileY = dy > 0 ? Math.ceil(newY / TILE_SIZE) :
+      dy < 0 ? Math.floor(newY / TILE_SIZE) :
+        player.position.y;
 
     if (
-      newTileX < 0 ||
-      newTileX >= this.map.columns ||
-      newTileY < 0 ||
-      newTileY >= this.map.rows
-    ) {
-      return false;
-    }
+      newTileX < 0 || newTileX >= this.map.columns ||
+      newTileY < 0 || newTileY >= this.map.rows
+    ) return false;
 
     const tile = this.map.getTile(newTileY, newTileX);
-    if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
-      return false;
-    }
+    if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) return false;
 
-    const positionChanged =
-      newX !== oldX ||
-      newY !== oldY;
+    const positionChanged = newX !== oldX || newY !== oldY;
 
     player.pixelPosition.x = newX;
     player.pixelPosition.y = newY;
@@ -171,11 +208,17 @@ class Room {
     ) {
       player.position.x = newTileX;
       player.position.y = newTileY;
-      // Check power-ups here if desired
+    }
+
+    // Update lastAxis if movement occurred
+    if (positionChanged) {
+      player.lastAxis = newAxis;
     }
 
     return positionChanged;
   }
+
+
 
   broadcast(event, data) {
     for (const player of Object.values(this.players)) {

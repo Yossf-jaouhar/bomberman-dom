@@ -11,6 +11,7 @@ class Player {
     this.explosionRange = 1;
     this.powerUps = [];
     this.avatar = null;
+   this.lastAxis =  null
   }
 
   loseLife() {

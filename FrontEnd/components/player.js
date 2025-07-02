@@ -9,8 +9,8 @@ export default function PlayerDivs(players, tileSize) {
         width: ${tileSize}px;
         height: ${tileSize}px;
         position: absolute;
-        left: ${player.pixelX}px;    // <-- CHANGED
-        top: ${player.pixelY}px;     // <-- CHANGED
+        left: ${player.pixelX}px;   
+        top: ${player.pixelY}px;
         background-image: url('./images/${player.avatar}.png');
         background-size: contain;
         background-repeat: no-repeat;
