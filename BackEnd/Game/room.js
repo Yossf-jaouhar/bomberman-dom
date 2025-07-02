@@ -131,92 +131,127 @@ class Room {
   }
 
   movePlayerPixel(name, dx, dy) {
-    const player = this.players[name]
-    if (!player || !player.isAlive()) return false
-
-    const oldX = player.pixelPosition.x;
-    const oldY = player.pixelPosition.y;
+    const player = this.players[name];
+    if (!player || !player.isAlive()) return false;
 
     const TILE_SIZE = 40;
-    const CENTER_THRESHOLD = TILE_SIZE * 0.5;
+    const oldX = player.pixelPosition.x;
+    const oldY = player.pixelPosition.y;
 
     const centerX = player.position.x * TILE_SIZE + TILE_SIZE / 2;
     const centerY = player.position.y * TILE_SIZE + TILE_SIZE / 2;
 
-    // Determine if the player is changing axis
-    const newAxis = (dx !== 0) ? "x" : (dy !== 0) ? "y" : null;
+    const playerCenterX = player.pixelPosition.x + TILE_SIZE / 2;
+    const playerCenterY = player.pixelPosition.y + TILE_SIZE / 2;
+
+    const newAxis = dx !== 0 ? "x" : dy !== 0 ? "y" : null;
 
     let isChangingAxis = false;
     if (player.lastAxis && newAxis && player.lastAxis !== newAxis) {
       isChangingAxis = true;
-      console.log('tesr');
-      
-      // player.lastAxis = newAxis
     }
 
     if (isChangingAxis) {
-      const distFromCenterX = Math.abs(oldX - centerX);
-      const distFromCenterY = Math.abs(oldY - centerY);
+      const CENTER_THRESHOLD = TILE_SIZE * 0.4;
+      const distFromCenterX = Math.abs(playerCenterX - centerX);
+      const distFromCenterY = Math.abs(playerCenterY - centerY);
 
       if (distFromCenterX > CENTER_THRESHOLD || distFromCenterY > CENTER_THRESHOLD) {
-        return false; // too far, block
+        return false;
       } else {
-        // snap to center and stop movement this frame
-        player.pixelPosition.x = centerX;
-        player.pixelPosition.y = centerY;
-
-        // Update tile position too:
+        player.pixelPosition.x = centerX - TILE_SIZE / 2;
+        player.pixelPosition.y = centerY - TILE_SIZE / 2;
         player.position.x = Math.floor(centerX / TILE_SIZE);
         player.position.y = Math.floor(centerY / TILE_SIZE);
-
-        // update lastAxis to newAxis since axis switched now
         player.lastAxis = newAxis;
-
-        // Don't move this frame after snapping
         return true;
       }
     }
 
-    // Movement allowed
-    let newX = player.pixelPosition.x + dx;
-    let newY = player.pixelPosition.y + dy;
+    let newX = player.pixelPosition.x;
+    let newY = player.pixelPosition.y;
 
-    let newTileX = dx > 0 ? Math.ceil(newX / TILE_SIZE) :
-      dx < 0 ? Math.floor(newX / TILE_SIZE) :
-        player.position.x;
+    if (dx !== 0) {
+      if (dx > 0) {
+        // moving right
+        const rightEdge = player.pixelPosition.x + TILE_SIZE + dx;
+        const rightTile = Math.floor(rightEdge / TILE_SIZE);
 
-    let newTileY = dy > 0 ? Math.ceil(newY / TILE_SIZE) :
-      dy < 0 ? Math.floor(newY / TILE_SIZE) :
-        player.position.y;
+        if (rightTile !== player.position.x) {
+          const tile = this.map.getTile(player.position.y, rightTile);
+          if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
+            // Clamp right edge to boundary of current tile
+            newX = (player.position.x + 1) * TILE_SIZE - TILE_SIZE;
+            dx = 0;
+          }
+        }
+      } else {
+        // moving left
+        const leftEdge = player.pixelPosition.x + dx;
+        const leftTile = Math.floor(leftEdge / TILE_SIZE);
 
-    if (
-      newTileX < 0 || newTileX >= this.map.columns ||
-      newTileY < 0 || newTileY >= this.map.rows
-    ) return false;
+        if (leftTile !== player.position.x) {
+          const tile = this.map.getTile(player.position.y, leftTile);
+          if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
+            // Clamp left edge to boundary of current tile
+            newX = player.position.x * TILE_SIZE;
+            dx = 0;
+          }
+        }
+      }
+    }
 
-    const tile = this.map.getTile(newTileY, newTileX);
-    if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) return false;
+    if (dy !== 0) {
+      if (dy > 0) {
+        // moving down
+        const bottomEdge = player.pixelPosition.y + TILE_SIZE + dy;
+        const downTile = Math.floor(bottomEdge / TILE_SIZE);
 
-    const positionChanged = newX !== oldX || newY !== oldY;
+        if (downTile !== player.position.y) {
+          const tile = this.map.getTile(downTile, player.position.x);
+          if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
+            newY = (player.position.y + 1) * TILE_SIZE - TILE_SIZE;
+            dy = 0;
+          }
+        }
+      } else {
+        // moving up
+        const topEdge = player.pixelPosition.y + dy;
+        const upTile = Math.floor(topEdge / TILE_SIZE);
+
+        if (upTile !== player.position.y) {
+          const tile = this.map.getTile(upTile, player.position.x);
+          if (tile === this.map.TILE_WALL || tile === this.map.TILE_BLOCK) {
+            newY = player.position.y * TILE_SIZE;
+            dy = 0;
+          }
+        }
+      }
+    }
+
+    newX += dx;
+    newY += dy;
+
+    // Determine tile after move
+    const newTileX = Math.floor((newX + TILE_SIZE / 2) / TILE_SIZE);
+    const newTileY = Math.floor((newY + TILE_SIZE / 2) / TILE_SIZE);
 
     player.pixelPosition.x = newX;
     player.pixelPosition.y = newY;
 
-    if (
-      newTileX !== player.position.x ||
-      newTileY !== player.position.y
-    ) {
+    if (newTileX !== player.position.x || newTileY !== player.position.y) {
       player.position.x = newTileX;
       player.position.y = newTileY;
     }
 
-    // Update lastAxis if movement occurred
-    if (positionChanged) {
+    if (newX !== oldX || newY !== oldY) {
       player.lastAxis = newAxis;
+      return true;
+    } else {
+      return false;
     }
-
-    return positionChanged;
   }
+
 
 
 
