@@ -2,7 +2,7 @@
 let socket;
 
 export function connectWebSocket(nickname) {
-  socket = io("http://localhost:3000", {
+  socket = io(`http://${window.location.hostname}:3000`, {
     query: { name: nickname },
   });
 

@@ -18,8 +18,8 @@ class GameMap {
 
 
     generateMap() {
+        
         this.tiles = new Array(this.rows * this.columns).fill(this.TILE_EMPTY);
-
         // Place walls - outer boundaries + inner walls on even rows & cols
         for (let r = 0; r < this.rows; r++) {
             for (let c = 0; c < this.columns; c++) {
