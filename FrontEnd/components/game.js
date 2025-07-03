@@ -49,6 +49,7 @@ export default function Game() {
     bombsPlaced: [],
     bombsExploded: [],
     explosionsFullUpdate: null,
+    powerUpPicked: null,
   };
 
 
@@ -109,6 +110,11 @@ export default function Game() {
   socket.on('powerUpSpawned', (data) => {
     pendingState.powerUps = data
   })
+
+  socket.on("powerUpPicked", (data) => {
+    pendingState.powerUpPicked = data;
+  });
+
 
 
 
@@ -211,11 +217,20 @@ export default function Game() {
 
     //powerUps
     if (pendingState.powerUps) {
-      console.log("powers" , pendingState.powerUps);
-      
+      console.log("powers", pendingState.powerUps);
+
       applyPowerUps(pendingState.powerUps);
       pendingState.powerUps = null;
     }
+    
+    if (pendingState.powerUpPicked) {
+      const { x, y } = pendingState.powerUpPicked;
+      setPowerUps((prev) =>
+        prev.filter((p) => !(p.x === x && p.y === y))
+      );
+      pendingState.powerUpPicked = null;
+    }
+
 
 
 
@@ -249,6 +264,10 @@ export default function Game() {
         key: `powerup-${p.x}-${p.y}-${index}`,
       })
     );
+  }
+
+  function pickPowerUps() {
+
   }
 
 
@@ -360,7 +379,7 @@ export default function Game() {
       ...MapTiles(mapTiles(), tileSize, cols),
       ...PlayerDivs(players(), tileSize),
       ...BombDivs(bombs(), explosions()),
-      ...PowerUpDivs(powerUps() , tileSize)
+      ...PowerUpDivs(powerUps(), tileSize)
     ),
     gameOver() &&
     E("div", {

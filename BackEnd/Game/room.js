@@ -238,7 +238,6 @@ class Room {
       player.position.y = newTileY;
     }
 
-    // ✅ CHECK FOR POWER-UP PICKUP
     const powerUpIndex = this.powerUps.findIndex(
       (p) => p.x === player.position.x && p.y === player.position.y
     );
@@ -262,6 +261,7 @@ class Room {
 
 
   pickupPowerUp(name, x, y) {
+    
     const powerUpIndex = this.powerUps.findIndex(p => p.x === x && p.y === y);
     if (powerUpIndex === -1) {
       console.log(`No power-up at ${x},${y}`);
@@ -270,8 +270,9 @@ class Room {
     const powerUp = this.powerUps[powerUpIndex];
     const player = this.players[name];
     if (!player || !player.isAlive()) return;
-
+    
     player.addPowerUp(powerUp.type);
+    // console.log('power type',powerUp.type);
     this.powerUps.splice(powerUpIndex, 1);
 
     this.broadcast("powerUpPicked", {
@@ -415,7 +416,7 @@ class Room {
     if (playerCount === 1) {
       this.RoomState = "solo";
     }
-    if (playerCount  > 1) {
+    if (playerCount > 1) {
       this.startWaiting();
     }
     if (playerCount === 4) {
@@ -439,10 +440,10 @@ class Room {
 
   startWaiting() {
     this.RoomState = "waiting";
-    
-    
+
+
     if (this.timeInt) return;
-    
+
     this.timeInt = setInterval(() => {
       this.Counter--;
       this.broadcast("waiting", { Counter: this.Counter });
@@ -458,9 +459,9 @@ class Room {
   startPreparing() {
     this.RoomState = "preparing";
 
-    
+
     if (this.timeInt) return;
-    
+
     this.timeInt = setInterval(() => {
       this.counter--;
       this.broadcast("preparing", { counter: this.counter });

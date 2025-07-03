@@ -50,6 +50,8 @@ function setupSocketIO(server) {
       room.pickupPowerUp(name, data.x, data.y);
     });
 
+    
+
     socket.on("startMoving", (data) => {
       console.log("move requested", data);
       room.setPlayerDirection(name, data.direction);
