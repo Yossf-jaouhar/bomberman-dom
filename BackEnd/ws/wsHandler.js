@@ -1,12 +1,13 @@
 const { Server } = require("socket.io");
 const { game } = require("../Game/game");
+const Mutex = require("./mutex");
 
 function setupSocketIO(server) {
   console.log("Setting up Socket.IO...");
 
   const io = new Server(server);
 
-  io.on("connection", (socket) => {
+  io.on("connection", async(socket) => {
 
 
     // Join the game
@@ -17,71 +18,118 @@ function setupSocketIO(server) {
       return;
     }
     const room = game.join(name, socket);
-    console.log("joined", Object.keys(room.players).length);
+
+    if (!room.mutex) {
+      room.mutex = new Mutex(); 
+    }
+    
 
     //for testing with single PLayer 
     // room.startGame()
 
-    room.broadcast("joined", {
-      RoomState: room.RoomState,
-      nofPlayers: Object.keys(room.players).length,
-      Counter: room.Counter,
-    });
-    room.broadcast("MessageHistory", {
-      Messages: room.chatMessages,
-    });
+    const unlock = await room.mutex.lock();
+    try {
+      room.broadcast("joined", {
+        RoomState: room.RoomState,
+        nofPlayers: Object.keys(room.players).length,
+        Counter: room.Counter,
+      });
+    
+      room.broadcast("MessageHistory", {
+        Messages: room.chatMessages,
+      });
+    } finally {
+      unlock();
+    }
+    
 
 
     //receive Messages
-    socket.on("chatMessage", (data) => {
-      console.log(`[${name}]: ${data.text}`);
-      room.chatMessages.push({ from: name, text: data.text });
-      room.broadcast("chatMessage", {
-        from: name,
-        text: data.text,
-      });
+    socket.on("chatMessage", async (data) => {
+      const unlock = await room.mutex.lock(); 
+
+      try {
+        room.chatMessages.push({ from: name, text: data.text });
+        room.broadcast("chatMessage", {
+          from: name,
+          text: data.text,
+        });
+
+      } finally {
+        unlock()
+      }
     });
 
-    socket.on("placeBomb", () => {
-      room.placeBomb(name);
+    socket.on("placeBomb", async () => {
+      const unlock = await room.mutex.lock();
+      try {
+        room.placeBomb(name);
+      } finally {
+        unlock()
+      }
     });
 
-    socket.on("pickupPowerUp", (data) => {
-      room.pickupPowerUp(name, data.x, data.y);
+    socket.on("pickupPowerUp", async (data) => {
+      const unlock = await room.mutex.lock()
+      try {
+        room.pickupPowerUp(name, data.x, data.y);
+      } finally {
+        unlock()
+      }
     });
 
     
 
-    socket.on("startMoving", (data) => {
+    socket.on("startMoving", async(data) => {
+      const unlock = await room.mutex.lock(); 
+      try {
+        room.setPlayerDirection(name, data.direction);
+      } finally {
+        unlock()
+      }
+    });
+
+
+    socket.on("stopMoving", async() => {
+      const unlock = await room.mutex.lock(); 
+      try  {
+        room.setPlayerDirection(name, null);
+      } finally {
+        unlock()
+      }
+    });
+
+    socket.on("move", async (data) => {
       console.log("move requested", data);
-      room.setPlayerDirection(name, data.direction);
+      const unlock = await room.mutex.lock(); 
+      try {
+        room.movePlayerPixel(name, data.dx, data.dy);
+      } finally {
+        unlock(); 
+      }
     });
-
-
-    socket.on("stopMoving", () => {
-      room.setPlayerDirection(name, null);
-    });
-
-
-
-
-    socket.on("move", (data) => {
-      console.log("move requested", data);
-
-      room.movePlayerPixel(name, data.dx, data.dy);
-    });
+    
 
     // Handle messages
-    socket.on("message", (message) => {
-      console.log(`[${name}]: ${message}`);
-      // socket.emit("message", `Server received: ${message}`);
+    socket.on("message", async (message) => {
+      const unlock = await room.mutex.lock(); 
+      try {
+        console.log(`[${name}]: ${message}`);
+      } finally {
+        unlock()
+      }
     });
 
 
 
     // Handle disconnection
-    socket.on("disconnect", () => {
-      room.removePlayer(name);
+    socket.on("disconnect", async() => {
+      const unlock = await room.mutex.lock(); 
+      try {
+        room.removePlayer(name);
+      } finally {
+        unlock()
+      }
       console.log(`👋 Client disconnected: ${name} left room ${room.id}. Remaining players: ${room.players.length}`);
     });
 
