@@ -16,6 +16,9 @@ class Room {
   }
 
   startGame() {
+    if (this.RoomState == "started") {
+      return
+    }
     this.RoomState = "started";
 
     this.map = new GameMap(13, 15, 40);
@@ -53,7 +56,6 @@ class Room {
       map: this.map.tiles,
       players: publicPlayersData
     });
-
     for (const player of Object.values(this.players)) {
       player.socket.emit("playerData", {
         name: player.name,
@@ -371,11 +373,6 @@ class Room {
 
   hasPlayer(name) {
     return this.players.hasOwnProperty(name);
-  }
-  broadcast(event, data) {
-    for (const player of Object.values(this.players)) {
-      player.socket.emit(event, data);
-    }
   }
   placeBomb(name) {
     const player = this.players[name];

@@ -73,53 +73,60 @@ export default function Game() {
 
 
   socket.on("bombPlaced", (data) => {
+    console.log("[bombPlaced]", data);
     pendingState.bombsPlaced.push(data);
   });
 
   socket.on("bombExploded", (data) => {
+    console.log("[bombExploded]", data);
     pendingState.bombsExploded.push(data);
   });
 
   socket.on("explosionsUpdate", (data) => {
+    console.log("[explosionsUpdate]", data);
     pendingState.explosionsFullUpdate = data;
   });
 
   socket.on("gameStart", (data) => {
+    console.log("[gameStart]", data);
     pendingState.gameStart = data;
   });
 
-
   socket.on("playerData", (data) => {
+    console.log("[playerData]", data);
     pendingState.playerData = data;
   });
 
-
   socket.on("updatePlayers", (data) => {
+    console.log("[updatePlayers]", data);
     pendingState.updatePlayers = data;
   });
 
-
   socket.on("mapChange", (data) => {
+    console.log("[mapChange]", data);
     pendingState.mapChange = data;
   });
 
-
   socket.on("lifeUpdate", (data) => {
+    console.log("[lifeUpdate]", data);
     pendingState.lifeUpdate = data;
   });
 
-
   socket.on("playerDied", (data) => {
+    console.log("[playerDied]", data);
     pendingState.playerDied = data;
   });
 
-  socket.on('powerUpSpawned', (data) => {
-    pendingState.powerUps = data
-  })
+  socket.on("powerUpSpawned", (data) => {
+    console.log("[powerUpSpawned]", data);
+    pendingState.powerUps = data;
+  });
 
   socket.on("powerUpPicked", (data) => {
+    console.log("[powerUpPicked]", data);
     pendingState.powerUpPicked = data;
   });
+
 
 
 
@@ -272,8 +279,7 @@ export default function Game() {
   function applyPowerUps(data) {
     console.log("powerUpSpawned", data);
     setPowerUps((prev) => {
-      const existing = prev.filter((p) => !(p.x === data.x && p.y === data.y));
-      return [...existing, data];
+      return [...prev, data];
     });
   }
 
@@ -396,50 +402,31 @@ export default function Game() {
     GameHeader(playerName(), playerLives(), speed(), maxBombs(), explosionRange()),
     E("div", {
       class: "map-grid",
-      style: `
-        display: grid;
-        grid-template-columns: repeat(${cols}, ${tileSize}px);
-        grid-template-rows: repeat(${rows}, ${tileSize}px);
-        position: relative;
-        width: ${cols * tileSize}px;
-        height: ${rows * tileSize}px;
-      `,
     }).childs(
       ...MapTiles(mapTiles(), tileSize, cols),
       ...PlayerDivs(players(), tileSize),
       ...BombDivs(bombs(), explosions()),
       ...PowerUpDivs(powerUps(), tileSize)
     ),
-    gameOver() &&
-    E("div", {
-      class: "game-over-popup",
-      style: `
-           position: absolute;
-           top: 50%;
-           left: 50%;
-           transform: translate(-50%, -50%);
-           background: rgba(0,0,0,0.8);
-           color: white;
-           padding: 30px;
-           border-radius: 10px;
-           z-index: 9999;
-           text-align: center;
-           font-size: 24px;
-         `,
-    }).childs(
-      "Game Over",
-      E("div", { style: "margin-top: 10px; font-size: 16px;" }).childs(
-        "Press any key to return to start"
-      ),
-      E("button", {
-        class: "Mybtn",
-        $click: () => {
-          Myapp.setGlobalState("name", null);
-          cleanupPlayerMovement()
-          Myapp.navigate("/");
-        },
-      }).childs("restart")
-    )
+    gameOver() 
+      ? E("div", {
+        class: "game-over-popup",
+      }).childs(
+        "Game Over",
+        E("div", {class : "childtxt"}).childs(
+          "Press any key to return to start"
+        ),
+        E("button", {
+          class: "Mybtn",
+          $click: () => {
+            Myapp.setGlobalState("name", null);
+            cleanupPlayerMovement();
+            Myapp.navigate("/");
+          },
+        }).childs("restart")
+      )
+      : null
   );
+
 }
 

@@ -64,6 +64,7 @@
   background-size: cover;
   background-image: url("../images/powerUps.png");
 }
+
 .game-header {
   display: flex;
   justify-content: space-between;
@@ -92,4 +93,13 @@
 .powerup-count {
   font-weight: bold;
   font-size: 14px;
+}
+
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(15, 40px);
+  grid-template-rows: repeat(13, 40px);
+  position: relative;
+  width: calc(15*40px);
+  height: calc(13*40px);
 }

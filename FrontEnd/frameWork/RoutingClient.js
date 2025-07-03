@@ -53,10 +53,8 @@ export default class App {
   rerender() {
     this.hookIndex = 0
     const newVNode = this.currentDOMFunc()
-    console.log(this.root);
 
     MyNewPatch(this.root, this.currentComponent, newVNode)
-    console.log(this.root);
 
     this.currentComponent = newVNode
   }
