@@ -24,10 +24,13 @@ export default class App {
     this.routes.set(path, handler);
   }
 
-  navigate(path) {
+   navigate(path) {
+    this.hookStates = [];
+    this.hookIndex = 0;
     history.pushState({}, "", path);
     this.handleRoute();
   }
+
 
   useState(initialValue) {
     const currentIndex = this.hookIndex;
