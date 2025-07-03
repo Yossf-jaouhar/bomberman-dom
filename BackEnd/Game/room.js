@@ -1,9 +1,10 @@
+const { game } = require('./game.js');
 const GameMap = require('./map');
 const Player = require('./player');
 const POWERUPS = ["Bomb", "Flame", "Speed"];
-
 class Room {
-  constructor() {
+  constructor(gameInstance) {
+    this.game = gameInstance;
     this.RoomState = null;
     this.players = {};
     this.Counter = 5;
@@ -14,7 +15,12 @@ class Room {
     this.bombs = [];
     this.powerUps = [];
   }
-
+  removePlayer(name) {
+    delete this.players[name];
+    if (Object.keys(this.players).length === 0) {
+      this.game.removeRoom(this);
+    }
+  }
   startGame() {
     if (this.RoomState == "started") {
       return
@@ -78,6 +84,7 @@ class Room {
     setInterval(() => {
       this.update();
     }, 1000 / 60);
+
   }
 
   setPlayerDirection(name, direction) {
@@ -430,9 +437,6 @@ class Room {
     }
   }
 
-  removePlayer(name) {
-    delete this.players[name];
-  }
 
   broadcast(event, data) {
     for (const player of Object.values(this.players)) {
@@ -449,7 +453,7 @@ class Room {
 
 
     if (this.timeInt) return;
-    
+
     this.broadcast("waiting", { Counter: this.Counter });
 
     this.timeInt = setInterval(() => {

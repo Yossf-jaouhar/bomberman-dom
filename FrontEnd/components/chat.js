@@ -7,7 +7,7 @@ export default function Chat() {
     const name = Myapp.getGlobalState("name");
 
     const [chatMessages, setChatMessages] = Myapp.useState([]);
-    const [hidden, setHidden] = Myapp.useState(true);
+    const [hidden, setHidden] = Myapp.useState(false);
     socket.off("chatMessage")
     socket.off("MessageHistory")
     // Listen for chat messages from the server

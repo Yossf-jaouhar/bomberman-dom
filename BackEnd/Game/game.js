@@ -8,7 +8,7 @@ class Game {
 
     createRoom() {
         const roomId = Object.keys(this.rooms).length;
-        this.rooms[roomId] = new Room();
+        this.rooms[roomId] = new Room(this);
         return this.rooms[roomId];
     }
     join(playerName, socket) {
@@ -22,6 +22,15 @@ class Game {
         const newRoom = this.createRoom();
         newRoom.addPlayer(playerName, socket);
         return newRoom;
+    }
+    removeRoom(room) {
+        for (const id in this.rooms) {
+            if (this.rooms[id] === room) {
+                delete this.rooms[id];
+                console.log(`Room ${id} removed from game.`);
+                break;
+            }
+        }
     }
 
 }

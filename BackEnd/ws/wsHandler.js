@@ -50,7 +50,7 @@ function setupSocketIO(server) {
       room.pickupPowerUp(name, data.x, data.y);
     });
 
-    
+
 
     socket.on("startMoving", (data) => {
       console.log("move requested", data);
@@ -81,7 +81,8 @@ function setupSocketIO(server) {
 
     // Handle disconnection
     socket.on("disconnect", () => {
-      room.removePlayer(name);
+       room.removePlayer(name);
+      console.log(game.rooms);
       console.log(`👋 Client disconnected: ${name} left room ${room.id}. Remaining players: ${room.players.length}`);
     });
 

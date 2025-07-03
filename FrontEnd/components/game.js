@@ -51,7 +51,7 @@ export default function Game() {
     mapChange: null,
     lifeUpdate: null,
     playerDied: null,
-    powerUps: null,
+    powerUps: [],
     bombsPlaced: [],
     bombsExploded: [],
     explosionsFullUpdate: null,
@@ -159,11 +159,10 @@ export default function Game() {
     }
 
     //powerUps
-    if (pendingState.powerUps) {
+    if (Array.isArray(pendingState.powerUps) && pendingState.powerUps.length > 0) {
       console.log("powers", pendingState.powerUps);
-
       applyPowerUps(pendingState.powerUps);
-      pendingState.powerUps = null;
+      pendingState.powerUps = [];
     }
 
     if (pendingState.powerUpPicked) {
@@ -198,11 +197,11 @@ export default function Game() {
 
 
 
-    requestAnimationFrame(gameRenderLoop);
+    gggg=requestAnimationFrame(gameRenderLoop);
   }
 
 
-  requestAnimationFrame(gameRenderLoop);
+  gggg=requestAnimationFrame(gameRenderLoop);
 
 
 
@@ -219,6 +218,11 @@ export default function Game() {
   }
 
   function PowerUpDivs(powerUps, tileSize) {
+    console.log(powerUps);
+    if (!Array.isArray(powerUps) || (Array.isArray(powerUps) && powerUps.length == 0)) {
+      return []
+    }
+
     return powerUps.map((p, index) =>
       E("div", {
         class: `power-up ${p.type}`,
@@ -334,7 +338,7 @@ export default function Game() {
       ...MapTiles(mapTiles() || [], tileSize, cols),
       ...PlayerDivs(players() || [], tileSize),
       ...BombDivs(bombs(), explosions()),
-      ...PowerUpDivs(powerUps(), tileSize)
+      ...PowerUpDivs(powerUps() || [], tileSize)
     ),
     gameOver()
       ? E("div", {
