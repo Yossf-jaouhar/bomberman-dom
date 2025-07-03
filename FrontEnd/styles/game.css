@@ -62,7 +62,22 @@
 .power-up {
   z-index: 100;
   background-size: cover;
-  background-image: url("../images/powerUps.png");
+  width: 24px;
+  height: 24px;
+  position: absolute;
+
+}
+
+.Flame {
+  background-image: url("../images/flameRange.png");
+}
+
+.Speed {
+  background-image: url("../images/speedRapid.png");
+}
+
+.Bomb {
+  background-image: url("../images/maxBomb.png");
 }
 
 .game-header {

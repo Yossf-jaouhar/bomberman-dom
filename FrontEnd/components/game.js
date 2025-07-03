@@ -73,7 +73,6 @@ export default function Game() {
 
 
   socket.on("bombPlaced", (data) => {
-    console.log("[bombPlaced]", data);
     pendingState.bombsPlaced.push(data);
   });
 
@@ -83,47 +82,41 @@ export default function Game() {
   });
 
   socket.on("explosionsUpdate", (data) => {
-    console.log("[explosionsUpdate]", data);
+
     pendingState.explosionsFullUpdate = data;
   });
 
   socket.on("gameStart", (data) => {
-    console.log("[gameStart]", data);
+
     pendingState.gameStart = data;
   });
 
   socket.on("playerData", (data) => {
-    console.log("[playerData]", data);
+
     pendingState.playerData = data;
   });
 
   socket.on("updatePlayers", (data) => {
-    console.log("[updatePlayers]", data);
     pendingState.updatePlayers = data;
   });
 
   socket.on("mapChange", (data) => {
-    console.log("[mapChange]", data);
     pendingState.mapChange = data;
   });
 
   socket.on("lifeUpdate", (data) => {
-    console.log("[lifeUpdate]", data);
     pendingState.lifeUpdate = data;
   });
 
   socket.on("playerDied", (data) => {
-    console.log("[playerDied]", data);
     pendingState.playerDied = data;
   });
 
   socket.on("powerUpSpawned", (data) => {
-    console.log("[powerUpSpawned]", data);
     pendingState.powerUps = data;
   });
 
   socket.on("powerUpPicked", (data) => {
-    console.log("[powerUpPicked]", data);
     pendingState.powerUpPicked = data;
   });
 
@@ -145,48 +138,47 @@ export default function Game() {
       pendingState.bombsPlaced = [];
     }
 
-    if (pendingState.bombsExploded.length > 0) {
-      for (const data of pendingState.bombsExploded) {
-        const bomb = data.bomb;
+    while (pendingState.bombsExploded.length > 0) {
+      const data = pendingState.bombsExploded.shift();
+      const bomb = data.bomb;
 
-        // remove bomb
-        setBombs((prev) =>
+      // remove bomb
+      setBombs((prev) =>
+        prev.filter(
+          (b) => !(b.x === bomb.x && b.y === bomb.y && b.owner === bomb.owner)
+        )
+      );
+
+      // add explosion
+      setExplosions((prev) => {
+        const destroyed = data.destroyedBlocks.map((block) => ({
+          x: block.x,
+          y: block.y,
+          owner: bomb.owner
+        }));
+        return [
+          ...prev,
+          { x: bomb.x, y: bomb.y, owner: bomb.owner },
+          ...destroyed
+        ];
+      });
+
+      // clear explosion after 100ms
+      setTimeout(() => {
+        setExplosions((prev) =>
           prev.filter(
-            (b) =>
+            (e) =>
               !(
-                b.x === bomb.x &&
-                b.y === bomb.y &&
-                b.owner === bomb.owner
-              )
+                e.x === bomb.x &&
+                e.y === bomb.y &&
+                e.owner === bomb.owner
+              ) &&
+              !data.destroyedBlocks.some((dt) => dt.x === e.x && dt.y === e.y)
           )
         );
-
-        // add explosion
-        setExplosions((prev) => [
-          ...prev,
-          {
-            x: bomb.x,
-            y: bomb.y,
-            owner: bomb.owner,
-          },
-        ]);
-
-        // clear explosion after 100ms
-        setTimeout(() => {
-          setExplosions((prev) =>
-            prev.filter(
-              (e) =>
-                !(
-                  e.x === bomb.x &&
-                  e.y === bomb.y &&
-                  e.owner === bomb.owner
-                )
-            )
-          );
-        }, 100);
-      }
-      pendingState.bombsExploded = [];
+      }, 100);
     }
+
 
     if (pendingState.explosionsFullUpdate) {
       setExplosions(pendingState.explosionsFullUpdate.explosions);
@@ -286,21 +278,14 @@ export default function Game() {
   function PowerUpDivs(powerUps, tileSize) {
     return powerUps.map((p, index) =>
       E("div", {
-        class: `power-up ${p.type}`, //power-up-bomb, power-up-speed
+        class: `power-up ${p.type}`,
         style: `
-        position: absolute;
-        left: ${p.x * tileSize}px;
-        top: ${p.y * tileSize}px;
-        width: ${tileSize}px;
-        height: ${tileSize}px;
+        left: ${p.x * tileSize + 8}px;
+        top: ${p.y * tileSize + 8}px;
       `,
         key: `powerup-${p.x}-${p.y}-${index}`,
       })
     );
-  }
-
-  function pickPowerUps() {
-
   }
 
 
@@ -350,7 +335,7 @@ export default function Game() {
 
 
   function applyUpdatePlayers(data) {
-    console.log("updatePlayers", data);
+    // console.log("updatePlayers", data);
 
 
     setPlayers((prevPlayers) =>
@@ -408,12 +393,12 @@ export default function Game() {
       ...BombDivs(bombs(), explosions()),
       ...PowerUpDivs(powerUps(), tileSize)
     ),
-    gameOver() 
+    gameOver()
       ? E("div", {
         class: "game-over-popup",
       }).childs(
         "Game Over",
-        E("div", {class : "childtxt"}).childs(
+        E("div", { class: "childtxt" }).childs(
           "Press any key to return to start"
         ),
         E("button", {

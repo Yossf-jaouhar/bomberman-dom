@@ -288,13 +288,14 @@ class Room {
     console.log(`${name} picked up ${powerUp.type}`);
   }
 
-
   explodeBomb(bomb) {
     console.log(`Bomb at ${bomb.x},${bomb.y} exploding`);
     let mapChanged = false;
     this.bombs = this.bombs.filter(b => b !== bomb);
 
     const blastTiles = [];
+    const destroyedBlocks = []; // ← New array to store destroyed blocks
+
     blastTiles.push({ x: bomb.x, y: bomb.y });
 
     const directions = [
@@ -317,6 +318,9 @@ class Room {
         }
 
         const tile = this.map.getTile(checkY, checkX);
+        if (tile === this.map.TILE_EMPTY) {
+          destroyedBlocks.push({ x: checkX, y: checkY });
+        }
         if (tile === this.map.TILE_WALL) {
           break;
         }
@@ -325,6 +329,7 @@ class Room {
 
         if (tile === this.map.TILE_BLOCK) {
           this.map.setTile(checkY, checkX, this.map.TILE_EMPTY);
+          destroyedBlocks.push({ x: checkX, y: checkY }); // ← Track destroyed block
           mapChanged = true;
 
           if (Math.random() < 0.3) {
@@ -361,7 +366,9 @@ class Room {
     }
 
     this.broadcast("bombExploded", {
-      bomb: { x: bomb.x, y: bomb.y, owner: bomb.owner }
+      bomb: { x: bomb.x, y: bomb.y, owner: bomb.owner },
+      blastTiles,
+      destroyedBlocks // ← send list of destroyed blocks
     });
 
     if (mapChanged) {
@@ -370,6 +377,7 @@ class Room {
       });
     }
   }
+
 
   hasPlayer(name) {
     return this.players.hasOwnProperty(name);
