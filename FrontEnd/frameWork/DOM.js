@@ -114,15 +114,29 @@ export function MyNewPatch(root, oldN, newN, pos = 0) {
 
   // New node only
   if (!oldN) {
-    
+
     root.appendChild(renderV(newN));
     return;
   }
 
   // Old node only (remove it)
   if (!newN) {
-    if (root.childNodes[pos]) {
-      root.removeChild(root.childNodes[pos]);
+    function findDomChildByKey(parent, key) {
+      return Array.from(parent.childNodes).find(
+        (el) => el?.getAttribute?.("key") === key
+      );
+    }
+    let toRemove;
+    if (oldN?.props?.key !== undefined) {
+      toRemove = findDomChildByKey(root, oldN.props.key);
+    } else {
+      toRemove = root.childNodes[pos];
+    }
+
+    console.log("I'm removing:", toRemove);
+
+    if (toRemove) {
+      root.removeChild(toRemove);
     }
     return;
   }

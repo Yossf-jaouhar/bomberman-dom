@@ -6,6 +6,7 @@ import MapTiles from "./mapTiles.js";
 import GameHeader from "./header.js";
 import usePlayerMovement, { cleanupPlayerMovement } from "../helper/movement.js";
 import BombDivs from "./bom.js";
+import registerWSListeners from "../ws/wsListeners.js";
 
 
 export default function Game() {
@@ -32,8 +33,9 @@ export default function Game() {
   const [speed, setSpeed] = Myapp.useState(2);
   const [maxBombs, setMaxBoms] = Myapp.useState(3);
   const [explosionRange, setExplosionRange] = Myapp.useState(4);
-
   const [powerUps, setPowerUps] = Myapp.useState([]);
+  console.log(explosions());
+  
 
 
   usePlayerMovement();
@@ -58,72 +60,7 @@ export default function Game() {
     explosionRange: null
   };
 
-
-  socket.off("gameStart");
-  socket.off("playerData");
-  socket.off("updatePlayers");
-  socket.off("bombPlaced");
-  socket.off("bombExploded");
-  socket.off("mapChange");
-  socket.off("playerDied");
-  socket.off("lifeUpdate");
-  socket.off("explosionsUpdate");
-  socket.off("powerUpPicked");
-  socket.off("powerUpSpawned");
-
-
-  socket.on("bombPlaced", (data) => {
-    pendingState.bombsPlaced.push(data);
-  });
-
-  socket.on("bombExploded", (data) => {
-    console.log("[bombExploded]", data);
-    pendingState.bombsExploded.push(data);
-  });
-
-  socket.on("explosionsUpdate", (data) => {
-
-    pendingState.explosionsFullUpdate = data;
-  });
-
-  socket.on("gameStart", (data) => {
-
-    pendingState.gameStart = data;
-  });
-
-  socket.on("playerData", (data) => {
-
-    pendingState.playerData = data;
-  });
-
-  socket.on("updatePlayers", (data) => {
-    pendingState.updatePlayers = data;
-  });
-
-  socket.on("mapChange", (data) => {
-    pendingState.mapChange = data;
-  });
-
-  socket.on("lifeUpdate", (data) => {
-    pendingState.lifeUpdate = data;
-  });
-
-  socket.on("playerDied", (data) => {
-    pendingState.playerDied = data;
-  });
-
-  socket.on("powerUpSpawned", (data) => {
-    pendingState.powerUps = data;
-  });
-
-  socket.on("powerUpPicked", (data) => {
-    pendingState.powerUpPicked = data;
-  });
-
-
-
-
-
+  registerWSListeners(pendingState)
 
   function gameRenderLoop() {
     if (pendingState.bombsPlaced.length > 0) {
