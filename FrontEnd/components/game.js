@@ -4,7 +4,7 @@ import { connectWebSocket, getSocket } from "../ws/wsHandler.js";
 import PlayerDivs from "./player.js";
 import MapTiles from "./mapTiles.js";
 import GameHeader from "./header.js";
-import usePlayerMovement from "../helper/movement.js";
+import usePlayerMovement, { cleanupPlayerMovement } from "../helper/movement.js";
 import BombDivs from "./bom.js";
 
 
@@ -222,7 +222,7 @@ export default function Game() {
       applyPowerUps(pendingState.powerUps);
       pendingState.powerUps = null;
     }
-    
+
     if (pendingState.powerUpPicked) {
       const { x, y } = pendingState.powerUpPicked;
       setPowerUps((prev) =>
@@ -406,9 +406,11 @@ export default function Game() {
         class: "Mybtn",
         $click: () => {
           Myapp.setGlobalState("name", null);
+          cleanupPlayerMovement()
           Myapp.navigate("/");
         },
       }).childs("restart")
     )
   );
 }
+
