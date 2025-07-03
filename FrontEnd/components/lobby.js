@@ -1,4 +1,5 @@
 import { E } from "../frameWork/DOM.js";
+import App from "../frameWork/RoutingClient.js";
 import Myapp from "../helper/appInstance.js";
 import { getSocket } from "../ws/wsHandler.js";
 import chat from "./chat.js";
@@ -11,7 +12,9 @@ export default function Lobby() {
     }
     const socket = getSocket();
     let [nOfPlayers, setNoOfPlayers] = Myapp.useState(1);
-    let [counter, setCounter] = Myapp.useState(null);
+    let [Counter, setCounter] = Myapp.useState(null);
+    let [counter, setcounter] = Myapp.useState(null);
+
     let [roomState, setRoomState] = Myapp.useState("solo");
     let intervalId = null;
 
@@ -45,24 +48,23 @@ export default function Lobby() {
         setNoOfPlayers(data.nofPlayers);
         setCounter(data.Counter);
         setRoomState(data.RoomState);
-
-        if (data.RoomState === "waiting" || data.RoomState === "preparing") {
-            startCountdown(data.Counter);
-        }
     });
 
     socket.on("waiting", (data) => {
         console.log("waiting received", data);
         setRoomState("waiting");
-        setNoOfPlayers(2)
-        //startCountdown(data.Counter);
+        setCounter(data.Counter)
     });
 
     socket.on("preparing", (data) => {
         console.log("preparing received", data);
         setRoomState("preparing");
-        startCountdown(data.counter);
+        setcounter(data.counter)
     });
+
+    if (counter() == 0) {
+        Myapp.navigate("/game")
+    }
 
     return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
         E("div", { class: "LobbyState df center gp24" }).childs(
@@ -71,8 +73,9 @@ export default function Lobby() {
                 E("p", {}).childs(`players`)
             ),
             E("div", { class: "df fc gp8 center" }).childs(
-                E("h1", {}).childs(`${counter()} s`),
-                E("p", {}).childs(`${roomState()}`)
+                Counter() ? E("h1", {}).childs(`${Counter()} s`):"" ,
+                counter() ? E("h1", {}).childs(`${counter()} s`) : "" ,
+                E("p", {}).childs(`${roomState()}`),
             )
         ),
         chat
