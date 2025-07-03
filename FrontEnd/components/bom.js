@@ -1,8 +1,10 @@
 import { E } from "../frameWork/DOM.js";
 
 export default function BombDivs(bombs = [], explosions = []) {
-  // Render bombs
-  const bombDivs = bombs.map((bomb, i) =>
+  const safeBombs = Array.isArray(bombs) ? bombs : [];
+  const safeExplosions = Array.isArray(explosions) ? explosions : [];
+
+  const bombDivs = safeBombs.map((bomb, i) =>
     E("div", {
       key: `bomb-${bomb.owner}-${bomb.x}-${bomb.y}-${i}`,
       class: `bomb owner-${bomb.owner}`,
@@ -18,8 +20,7 @@ export default function BombDivs(bombs = [], explosions = []) {
     })
   );
 
-  // Render explosions
-  const explosionDivs = explosions.map((explosion, i) =>
+  const explosionDivs = safeExplosions.map((explosion, i) =>
     E("div", {
       key: `explosion-${explosion.owner}-${explosion.x}-${explosion.y}-${i}`,
       class: `explosion owner-${explosion.owner}`,

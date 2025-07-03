@@ -1,4 +1,3 @@
-
 let socket;
 
 export function connectWebSocket(nickname) {

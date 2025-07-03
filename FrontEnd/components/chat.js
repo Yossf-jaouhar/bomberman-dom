@@ -38,7 +38,7 @@ export default function Chat() {
         }).childs(
             // Messages container
             E('div', { class: 'chat-messages strech gp16' }).childs(
-                ...chatMessages().map(msg =>
+                ...(chatMessages() || []).map(msg =>
                     E('div', {
                         class: `chat-msg ${msg.from === name ? 'me' : ''}`
                     }).childs(`${msg.from}:`, E("strong").childs(`${msg.text}`))

@@ -12,10 +12,11 @@ import registerWSListeners from "../ws/wsListeners.js";
 export default function Game() {
   let socket = getSocket();
   if (!socket) {
-    connectWebSocket("chakir");
-    socket = getSocket();
+    // connectWebSocket("chakir");
+    // socket = getSocket();
+    Myapp.navigate("/")
+    return
   }
-
 
   const rows = 13;
   const cols = 15;
@@ -35,7 +36,7 @@ export default function Game() {
   const [explosionRange, setExplosionRange] = Myapp.useState(4);
   const [powerUps, setPowerUps] = Myapp.useState([]);
   console.log(explosions());
-  
+
 
 
   usePlayerMovement();
@@ -207,8 +208,13 @@ export default function Game() {
 
   function applyPowerUps(data) {
     console.log("powerUpSpawned", data);
+
+    // Ensure data is array-like
+    const newPowers = Array.isArray(data) ? data : [data];
+
     setPowerUps((prev) => {
-      return [...prev, data];
+      const safePrev = Array.isArray(prev) ? prev : [];
+      return [...safePrev, ...newPowers];
     });
   }
 

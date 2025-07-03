@@ -6,8 +6,8 @@ class Room {
   constructor() {
     this.RoomState = null;
     this.players = {};
-    this.Counter = 20;
-    this.counter = 10;
+    this.Counter = 5;
+    this.counter = 3;
     this.timeInt = null;
     this.chatMessages = [];
     this.map = null;
@@ -449,10 +449,11 @@ class Room {
 
 
     if (this.timeInt) return;
+    
+    this.broadcast("waiting", { Counter: this.Counter });
 
     this.timeInt = setInterval(() => {
       this.Counter--;
-      this.broadcast("waiting", { Counter: this.Counter });
       if (this.Counter <= 0) {
         clearInterval(this.timeInt);
         this.timeInt = null;
@@ -465,12 +466,12 @@ class Room {
   startPreparing() {
     this.RoomState = "preparing";
 
-
     if (this.timeInt) return;
+
+    this.broadcast("preparing", { counter: this.counter });
 
     this.timeInt = setInterval(() => {
       this.counter--;
-      this.broadcast("preparing", { counter: this.counter });
       if (this.counter <= 0) {
         clearInterval(this.timeInt);
         this.timeInt = null;
