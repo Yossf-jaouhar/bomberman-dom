@@ -388,8 +388,8 @@ export default function Game() {
     E("div", {
       class: "map-grid",
     }).childs(
-      ...MapTiles(mapTiles(), tileSize, cols),
-      ...PlayerDivs(players(), tileSize),
+      ...MapTiles(mapTiles() || [], tileSize, cols),
+      ...PlayerDivs(players() || [], tileSize),
       ...BombDivs(bombs(), explosions()),
       ...PowerUpDivs(powerUps(), tileSize)
     ),
