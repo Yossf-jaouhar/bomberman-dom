@@ -29,6 +29,9 @@ export default function Game() {
   const [gameOver, setGameOver] = Myapp.useState(false);
   const [bombs, setBombs] = Myapp.useState([]);
   const [explosions, setExplosions] = Myapp.useState([]);
+  const [speed, setSpeed] = Myapp.useState(2);
+  const [maxBombs, setMaxBoms] = Myapp.useState(3);
+  const [explosionRange, setExplosionRange] = Myapp.useState(4);
 
   const [powerUps, setPowerUps] = Myapp.useState([]);
 
@@ -50,6 +53,9 @@ export default function Game() {
     bombsExploded: [],
     explosionsFullUpdate: null,
     powerUpPicked: null,
+    speed: null,
+    maxBombs: null,
+    explosionRange: null
   };
 
 
@@ -222,14 +228,35 @@ export default function Game() {
       applyPowerUps(pendingState.powerUps);
       pendingState.powerUps = null;
     }
-    
+
     if (pendingState.powerUpPicked) {
-      const { x, y } = pendingState.powerUpPicked;
+      const { x, y, type, newValue } = pendingState.powerUpPicked;
+
       setPowerUps((prev) =>
         prev.filter((p) => !(p.x === x && p.y === y))
       );
+
+      switch (type) {
+        case "Speed":
+          setSpeed(newValue);
+          break;
+
+        case "Bomb":
+          setMaxBoms(newValue);
+          break;
+
+        case "Flame":
+          setExplosionRange(newValue);
+          break;
+
+        default:
+          console.warn(`Unknown power-up type: ${type}`);
+          break;
+      }
+
       pendingState.powerUpPicked = null;
     }
+
 
 
 
@@ -278,7 +305,6 @@ export default function Game() {
 
     setMapTiles(data.map);
 
-
     const playersArray = Object.entries(data.players).map(([name, info]) => ({
       name,
       pixelX: info.x * tileSize,
@@ -299,6 +325,9 @@ export default function Game() {
 
     setPlayerName(data.name);
     setPlayerLives(data.lives);
+    setSpeed(data.speed)
+    setMaxBoms(data.maxBombs)
+    setExplosionRange(data.explosionRange)
     setCurrentPlayer({
       name: data.name,
       lives: data.lives,
@@ -364,7 +393,7 @@ export default function Game() {
 
 
   return E("div", { class: "game-screen" }).childs(
-    GameHeader(playerName(), playerLives()),
+    GameHeader(playerName(), playerLives(), speed(), maxBombs(), explosionRange()),
     E("div", {
       class: "map-grid",
       style: `

@@ -11,7 +11,7 @@ class Player {
     this.explosionRange = 1;
     this.powerUps = [];
     this.avatar = null;
-   this.lastAxis =  null
+    this.lastAxis = null
   }
 
   loseLife() {
@@ -26,12 +26,40 @@ class Player {
   }
 
   addPowerUp(type) {
-    this.powerUps.push(type);
-    if (type === "Bomb") this.maxBombs += 1;
-    if (type === "Flame") this.explosionRange += 1;
-    if (type === "Speed") this.speed += 1;
-  }
+    let newValue;
 
+    switch (type) {
+      case "Bomb":
+        if (this.maxBombs < 3) {
+          this.maxBombs += 1;
+          this.powerUps.push(type);
+        }
+        newValue = this.maxBombs;
+        break;
+
+      case "Flame":
+        if (this.explosionRange < 3) {
+          this.explosionRange += 1;
+          this.powerUps.push(type);
+        }
+        newValue = this.explosionRange;
+        break;
+
+      case "Speed":
+        if (this.speed < 3) {
+          this.speed += 1;
+          this.powerUps.push(type);
+        }
+        newValue = this.speed;
+        break;
+
+      default:
+        newValue = null;
+        break;
+    }
+
+    return newValue;
+  }
   resetPosition(tileX, tileY) {
     this.position = { x: tileX, y: tileY };
     this.pixelPosition = {

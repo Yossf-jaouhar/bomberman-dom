@@ -261,7 +261,7 @@ class Room {
 
 
   pickupPowerUp(name, x, y) {
-    
+
     const powerUpIndex = this.powerUps.findIndex(p => p.x === x && p.y === y);
     if (powerUpIndex === -1) {
       console.log(`No power-up at ${x},${y}`);
@@ -270,8 +270,8 @@ class Room {
     const powerUp = this.powerUps[powerUpIndex];
     const player = this.players[name];
     if (!player || !player.isAlive()) return;
-    
-    player.addPowerUp(powerUp.type);
+
+    const updatedValue = player.addPowerUp(powerUp.type);
     // console.log('power type',powerUp.type);
     this.powerUps.splice(powerUpIndex, 1);
 
@@ -279,7 +279,8 @@ class Room {
       name,
       type: powerUp.type,
       x,
-      y
+      y,
+      newValue: updatedValue
     });
 
     console.log(`${name} picked up ${powerUp.type}`);
