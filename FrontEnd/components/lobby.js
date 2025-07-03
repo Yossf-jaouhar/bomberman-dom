@@ -62,8 +62,10 @@ export default function Lobby() {
         setcounter(data.counter)
     });
 
-    if (counter() == 0) {
-        Myapp.navigate("/game")
+    if (counter() == 0 && counter() != null) {
+        Myapp.root.innerHTML = "";
+        Myapp.navigate("/game");
+        return
     }
 
     return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
