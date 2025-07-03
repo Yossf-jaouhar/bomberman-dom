@@ -210,9 +210,7 @@ export default function Game() {
     }
 
     //powerUps
-    if (pendingState.powerUps) {
-      console.log("powers" , pendingState.powerUps);
-      
+    if (pendingState.powerUps) {      
       applyPowerUps(pendingState.powerUps);
       pendingState.powerUps = null;
     }
@@ -228,7 +226,6 @@ export default function Game() {
 
 
   function applyPowerUps(data) {
-    console.log("powerUpSpawned", data);
     setPowerUps((prev) => {
       const existing = prev.filter((p) => !(p.x === data.x && p.y === data.y));
       return [...existing, data];
@@ -254,9 +251,6 @@ export default function Game() {
 
 
   function applyGameStart(data) {
-    console.log("gameStart", data);
-
-
     setMapTiles(data.map);
 
 
@@ -275,9 +269,6 @@ export default function Game() {
 
 
   function applyPlayerData(data) {
-    console.log("playerData", data);
-
-
     setPlayerName(data.name);
     setPlayerLives(data.lives);
     setCurrentPlayer({
@@ -296,9 +287,6 @@ export default function Game() {
 
 
   function applyUpdatePlayers(data) {
-    console.log("updatePlayers", data);
-
-
     setPlayers((prevPlayers) =>
       prevPlayers.map((player) => {
         const updatedPos = data.playersPositions[player.name];
@@ -330,7 +318,6 @@ export default function Game() {
 
 
   function applyPlayerDied(data) {
-    console.log("playerDied", data);
     setPlayers((prevPlayers) =>
       prevPlayers.filter((p) => p.name !== data.name)
     );

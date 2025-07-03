@@ -15,7 +15,7 @@ class Player {
   }
 
   loseLife() {
-    this.lives -= 1;
+    this.lives--;
     if (this.socket) {
       this.socket.emit("lifeUpdate", {
         lives: this.lives,
