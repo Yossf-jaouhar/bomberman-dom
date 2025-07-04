@@ -5,22 +5,22 @@ const Mutex = require("./mutex");
 function setupSocketIO(server) {
   const io = new Server(server);
 
-  io.on("connection", async(socket) => {
+  io.on("connection", async (socket) => {
 
 
     // Join the game
-    const name = socket.handshake.query.name;
+    const name = (socket.handshake.query.name || "").trim()
     if (!name) {
       console.error("Name parameter is required.");
       socket.disconnect();
       return;
     }
-    const room = game.join(name, socket);
+    const room = await game.join(name, socket);
 
     if (!room.mutex) {
-      room.mutex = new Mutex(); 
+      room.mutex = new Mutex();
     }
-    
+
 
     //for testing with single PLayer 
     // room.startGame()
@@ -32,19 +32,19 @@ function setupSocketIO(server) {
         nofPlayers: Object.keys(room.players).length,
         Counter: room.Counter,
       });
-    
+
       room.broadcast("MessageHistory", {
         Messages: room.chatMessages,
       });
     } finally {
       unlock();
     }
-    
+
 
 
     //receive Messages
     socket.on("chatMessage", async (data) => {
-      const unlock = await room.mutex.lock(); 
+      const unlock = await room.mutex.lock();
 
       try {
         room.chatMessages.push({ from: name, text: data.text });
@@ -78,8 +78,8 @@ function setupSocketIO(server) {
 
 
 
-    socket.on("startMoving", async(data) => {
-      const unlock = await room.mutex.lock(); 
+    socket.on("startMoving", async (data) => {
+      const unlock = await room.mutex.lock();
       try {
         room.setPlayerDirection(name, data.direction);
       } finally {
@@ -88,9 +88,9 @@ function setupSocketIO(server) {
     });
 
 
-    socket.on("stopMoving", async() => {
-      const unlock = await room.mutex.lock(); 
-      try  {
+    socket.on("stopMoving", async () => {
+      const unlock = await room.mutex.lock();
+      try {
         room.setPlayerDirection(name, null);
       } finally {
         unlock()
@@ -99,18 +99,23 @@ function setupSocketIO(server) {
 
     socket.on("move", async (data) => {
       console.log("move requested", data);
-      const unlock = await room.mutex.lock(); 
+
+      if (process.env.DEBUG === "true") {
+        console.log("move requested", data);
+      }
+
+      const unlock = await room.mutex.lock();
       try {
         room.movePlayerPixel(name, data.dx, data.dy);
       } finally {
-        unlock(); 
+        unlock();
       }
     });
-    
+
 
     // Handle messages
     socket.on("message", async (message) => {
-      const unlock = await room.mutex.lock(); 
+      const unlock = await room.mutex.lock();
       try {
         console.log(`[${name}]: ${message}`);
       } finally {
@@ -121,14 +126,16 @@ function setupSocketIO(server) {
 
 
     // Handle disconnection
-    socket.on("disconnect", async() => {
-      const unlock = await room.mutex.lock(); 
+    socket.on("disconnect", async () => {
+      const unlock = await room.mutex.lock();
       try {
         room.removePlayer(name);
       } finally {
         unlock()
       }
-      console.log(`👋 Client disconnected: ${name} left room ${room.id}. Remaining players: ${room.players.length}`);
+      console.log(
+        `👋 Client disconnected: ${name} left room ${room.id}. Remaining players: ${Object.keys(room.players).length}`
+      );
     });
 
 
