@@ -133,8 +133,6 @@ export function MyNewPatch(root, oldN, newN, pos = 0) {
       toRemove = root.childNodes[pos];
     }
 
-    console.log("I'm removing:", toRemove);
-
     if (toRemove) {
       root.removeChild(toRemove);
     }

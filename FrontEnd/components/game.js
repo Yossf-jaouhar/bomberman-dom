@@ -35,8 +35,6 @@ export default function Game() {
   const [maxBombs, setMaxBoms] = Myapp.useState(3);
   const [explosionRange, setExplosionRange] = Myapp.useState(4);
   const [powerUps, setPowerUps] = Myapp.useState([]);
-  console.log(explosions());
-
 
 
   usePlayerMovement();
@@ -160,7 +158,6 @@ export default function Game() {
 
     //powerUps
     if (Array.isArray(pendingState.powerUps) && pendingState.powerUps.length > 0) {
-      console.log("powers", pendingState.powerUps);
       applyPowerUps(pendingState.powerUps);
       pendingState.powerUps = [];
     }
@@ -206,9 +203,6 @@ export default function Game() {
 
 
   function applyPowerUps(data) {
-    console.log("powerUpSpawned", data);
-
-    // Ensure data is array-like
     const newPowers = Array.isArray(data) ? data : [data];
 
     setPowerUps((prev) => {
@@ -218,7 +212,6 @@ export default function Game() {
   }
 
   function PowerUpDivs(powerUps, tileSize) {
-    console.log(powerUps);
     if (!Array.isArray(powerUps) || (Array.isArray(powerUps) && powerUps.length == 0)) {
       return []
     }
@@ -238,9 +231,6 @@ export default function Game() {
 
 
   function applyGameStart(data) {
-    console.log("gameStart", data);
-
-
     setMapTiles(data.map);
 
     const playersArray = Object.entries(data.players).map(([name, info]) => ({
@@ -258,8 +248,6 @@ export default function Game() {
 
 
   function applyPlayerData(data) {
-    console.log("playerData", data);
-
 
     setPlayerName(data.name);
     setPlayerLives(data.lives);
@@ -330,7 +318,6 @@ export default function Game() {
 
 
   function applyPlayerDied(data) {
-    console.log("playerDied", data);
     setPlayers((prevPlayers) =>
       prevPlayers.filter((p) => p.name !== data.name)
     );

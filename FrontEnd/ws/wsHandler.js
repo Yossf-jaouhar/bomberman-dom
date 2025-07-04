@@ -1,3 +1,5 @@
+import Myapp from "../helper/appInstance.js";
+
 let socket;
 
 export function connectWebSocket(nickname) {
@@ -14,6 +16,9 @@ export function connectWebSocket(nickname) {
   });
 
   socket.on("disconnect", () => {
+    Myapp.setGlobalState("name" ,  "")
+    socket.close()
+    Myapp.navigate('/')
     console.log("Socket.IO disconnected");
   });
 

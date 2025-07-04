@@ -44,7 +44,6 @@ export default function Lobby() {
   socket.off("preparing");
 
   socket.on("joined", (data) => {
-    console.log("joined", data);
     setNoOfPlayers(data.nofPlayers);
     setCounter(data.Counter);
     setRoomState(data.RoomState);
@@ -56,7 +55,6 @@ export default function Lobby() {
   });
 
   socket.on("waiting", (data) => {
-    console.log("waiting", data);
     setRoomState("waiting");
     setCounter(data.Counter);
 
@@ -66,7 +64,6 @@ export default function Lobby() {
   });
 
   socket.on("preparing", (data) => {
-    console.log("preparing", data);
     setRoomState("preparing");
     setCounter(data.counter);
 

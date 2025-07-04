@@ -1,3 +1,4 @@
+import Myapp from "../helper/appInstance.js";
 import { getSocket } from "../ws/wsHandler.js";
 
 let listenersRegistered = false;
@@ -56,5 +57,8 @@ export default function registerWSListeners(pendingState) {
 
   socket.on("powerUpPicked", (data) => {
     pendingState.powerUpPicked = data;
+  });
+  socket.on("close", (data) => {
+   Myapp.navigate('/')
   });
 }

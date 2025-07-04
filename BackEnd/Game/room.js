@@ -270,30 +270,34 @@ class Room {
 
 
   pickupPowerUp(name, x, y) {
-
     const powerUpIndex = this.powerUps.findIndex(p => p.x === x && p.y === y);
     if (powerUpIndex === -1) {
       console.log(`No power-up at ${x},${y}`);
       return;
     }
+
     const powerUp = this.powerUps[powerUpIndex];
     const player = this.players[name];
     if (!player || !player.isAlive()) return;
 
     const updatedValue = player.addPowerUp(powerUp.type);
-    // console.log('power type',powerUp.type);
     this.powerUps.splice(powerUpIndex, 1);
 
-    this.broadcast("powerUpPicked", {
-      name,
-      type: powerUp.type,
-      x,
-      y,
-      newValue: updatedValue
-    });
+    if (player.socket) {
+      player.socket.emit("powerUpPicked", {
+        name,
+        type: powerUp.type,
+        x,
+        y,
+        newValue: updatedValue
+      });
+    } else {
+      console.log(`No socket found for player ${name}`);
+    }
 
     console.log(`${name} picked up ${powerUp.type}`);
   }
+
 
   explodeBomb(bomb) {
     console.log(`Bomb at ${bomb.x},${bomb.y} exploding`);

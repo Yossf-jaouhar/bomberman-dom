@@ -1,14 +1,18 @@
 import { E } from "../frameWork/DOM.js";
-import { connectWebSocket } from "../ws/wsHandler.js";
+import { connectWebSocket, getSocket } from "../ws/wsHandler.js";
 import Myapp from "../helper/appInstance.js";
 
 export default function Start() {
   // If user already has a name, redirect immediately
-  if (Myapp.getGlobalState("name")) {
-    Myapp.root.innerHTML = ""
-    Myapp.navigate("/lobby");
-    return
+  let sock = getSocket()
+  if (sock && sock.connected) {
+    Myapp.navigate("/lobby")
   }
+  // if (Myapp.getGlobalState("name")) {
+  //   Myapp.root.innerHTML = ""
+  //   Myapp.navigate("/lobby");
+  //   return
+  // }
 
   // Local state for input value, initialized from global state or empty
   let inputValue = Myapp.getGlobalState("name") || "";

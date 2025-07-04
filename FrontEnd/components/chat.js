@@ -20,7 +20,6 @@ export default function Chat() {
 
     // Send a new message
     function sendMessage(value) {
-        console.log(value);
         if (!value.trim()) return;
         // setChatMessages((prev) => [...prev, { from: "me", text: value.trim() }]);
         socket.emit("chatMessage", { from: name, text: value.trim() });
