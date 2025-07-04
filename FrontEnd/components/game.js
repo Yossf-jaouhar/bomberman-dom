@@ -307,9 +307,8 @@ export default function Game() {
       prevPlayers.filter((p) => p.name !== data.name)
     );
     if (data.name === playerName()) {
-      socket.close();
       setGameOver(true);
-    }
+        }
   }
 
 
@@ -339,7 +338,9 @@ export default function Game() {
           $click: () => {
             Myapp.setGlobalState("name", null);
             cleanupPlayerMovement();
+            socket.close();
             Myapp.navigate("/");
+
           },
         }).childs("restart")
       )
