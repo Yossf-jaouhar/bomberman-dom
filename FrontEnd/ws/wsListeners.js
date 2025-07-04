@@ -28,16 +28,14 @@ export default function registerWSListeners() {
     pendingState.explosionsFullUpdate = data;
   });
 
-  socket.on("gameStart", (data) => {
-    console.log('gameStart' , data);
+  socket.on("gameStart", (data) => {    
     pendingState.gameStart = data;
+    Myapp.navigate("/game")
   });
   
   socket.on("playerData", (data) => {
     console.log("playerData" , data);
-    
-    Myapp.navigate("/game")
-    pendingState.playerData = data;
+        pendingState.playerData = data;
   });
 
   socket.on("updatePlayers", (data) => {

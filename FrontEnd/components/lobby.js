@@ -38,7 +38,7 @@ export default function Lobby() {
 
   if (!listeningOn) {
     socket.on("joined", (data) => {
-      console.log('waiting ' , data);
+      console.log('waiting ', data);
       setNoOfPlayers(data.nofPlayers);
       setCounter(data.Counter);
       setRoomState(data.RoomState);
@@ -48,7 +48,6 @@ export default function Lobby() {
     });
 
     socket.on("waiting", (data) => {
-      console.log('waiting ' , data);
       setRoomState("waiting");
       setCounter(data.Counter);
       if (data.Counter != null) {
@@ -57,33 +56,34 @@ export default function Lobby() {
     });
 
     socket.on("preparing", (data) => {
-      console.log('Preparing ' , data);
       setRoomState("preparing");
       setCounter(data.counter);
+      if (data.counter != null) {
+        startCountdown(data.counter);
+      }
+    });
 
-    if (data.counter != null) {
-      startCountdown(data.counter);
-    }
-  });
 
-  // Handle navigation safely after counter hits zero
-  if (roomState() == "preparing"&& counter() === 0 ) {
-    socket.emit("Ready")
-  }
 
-  return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
-    E("div", { class: "LobbyState df center gp24" }).childs(
-      E("div", { class: "df fc gp8 center" }).childs(
-        E("h1", {}).childs(`${nOfPlayers()}/4`),
-        E("p", {}).childs(`players`)
+    socket.on("Start", (data) => {Myapp.navigate("/game")});
+      
+
+
+
+    return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
+      E("div", { class: "LobbyState df center gp24" }).childs(
+        E("div", { class: "df fc gp8 center" }).childs(
+          E("h1", {}).childs(`${nOfPlayers()}/4`),
+          E("p", {}).childs(`players`)
+        ),
+        E("div", { class: "df fc gp8 center" }).childs(
+          counter() != null
+            ? E("h1", {}).childs(`${counter()} s`)
+            : "",
+          E("p", {}).childs(`${roomState()}`)
+        )
       ),
-      E("div", { class: "df fc gp8 center" }).childs(
-        counter() != null
-          ? E("h1", {}).childs(`${counter()} s`)
-          : "",
-        E("p", {}).childs(`${roomState()}`)
-      )
-    ),
-    chat
-  );
+      chat
+    );
+  }
 }

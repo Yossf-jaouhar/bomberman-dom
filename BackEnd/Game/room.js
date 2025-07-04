@@ -1,4 +1,3 @@
-import  {game } from './game.js'
 import {GameMap} from './map.js'
 import {Player} from './player.js'
 
@@ -10,15 +9,13 @@ export class Room {
     this.game = gameInstance;
     this.RoomState = null;
     this.players = {};
-    this.Counter = 20;
-    this.counter = 10;
-    this.c = 7;
+    this.Counter = 3;
+    this.counter = 2;
     this.timeInt = null;
     this.chatMessages = [];
     this.map = null;
     this.bombs = [];
     this.powerUps = [];
-    this.readyPlayers = new Set();
   }
 
   addPlayer(name, socket) {
@@ -37,10 +34,14 @@ export class Room {
       this.startPreparing();
     }
   }
-  startWaiting() {
-    if (this.RoomState ="waiting") return;
 
+
+  startWaiting() {
+
+    
     this.RoomState = "waiting";
+
+
     if (this.timeInt) return;
 
     this.broadcast("waiting", { Counter: this.Counter });
@@ -55,54 +56,59 @@ export class Room {
       }
     }, 1000);
   }
+  
+  
 
   startPreparing() {
-    if (this.RoomState = "preparing") return ; 
+    
     this.RoomState = "preparing";
     if (this.timeInt) return;
 
-    this.broadcast("preparing", { counter: this.counter });
-
+    
     this.timeInt = setInterval(() => {
       this.counter--;
+      this.broadcast("preparing", { counter: this.counter });
+
       if (this.counter <= 0) {
         clearInterval(this.timeInt);
         this.timeInt = null;
-        this.startGame()
         console.log("Preparing finished");
+        this.startGame()
       }
     }, 1000);
   }
 
   startGame() {
-    console.log("Game Started");
+
     if (this.RoomState == "started") {
       return
     }
+    
     this.RoomState = "started";
+    this.broadcast("Start", null)    
 
     this.map = new GameMap(13, 15, 40);
     this.map.generateMap();
-
+    
     const startPositions = [
       { x: 1, y: 1 },
       { x: this.map.columns - 2, y: 1 },
       { x: 1, y: this.map.rows - 2 },
       { x: this.map.columns - 2, y: this.map.rows - 2 }
     ];
-
+    
     let i = 0;
     for (const player of Object.values(this.players)) {
       const pos = startPositions[i];
       player.resetPosition(pos.x, pos.y);
-
+      
       if (!player.avatar) {
         const avatarList = ["bilal.png", "l9r3.png", "lbnita.png", "ndadr.png"];
         player.avatar = avatarList[Math.floor(Math.random() * avatarList.length)];
       }
       i++;
     }
-
+    
     const publicPlayersData = {};
     for (const player of Object.values(this.players)) {
       publicPlayersData[player.name] = {
@@ -111,13 +117,14 @@ export class Room {
         avatar: player.avatar
       };
     }
-
+    
+    
     this.broadcast("gameStart", {
       map: this.map.tiles,
       players: publicPlayersData
     });
-
-
+    
+    
     for (const player of Object.values(this.players)) {
       player.socket.emit("playerData", {
         name: player.name,
@@ -140,9 +147,9 @@ export class Room {
     setInterval(() => {
       this.update();
     }, 1000 / 60);
-
+    
   }
-
+  
   removePlayer(name) {
     delete this.players[name];
     if (Object.keys(this.players).length === 0) {
@@ -153,10 +160,10 @@ export class Room {
   setPlayerDirection(name, direction) {
     const player = this.players[name];
     if (!player || !player.isAlive()) return;
-
+    
     player.movingDirection = direction;
   }
-
+  
   update() {
 
     let anyPlayerMoved = false;
@@ -175,18 +182,18 @@ export class Room {
           case "left":
             dx -= player.speed;
             break;
-          case "right":
-            dx += player.speed;
-            break;
+            case "right":
+              dx += player.speed;
+              break;
         }
-
+        
         const moved = this.movePlayerPixel(player.name, dx, dy);
         if (moved) {
           anyPlayerMoved = true;
         }
       }
     }
-
+    
     if (anyPlayerMoved) {
       const playersPositions = {};
       for (const p of Object.values(this.players)) {
@@ -198,7 +205,7 @@ export class Room {
           avatar: p.avatar
         };
       }
-
+      
       this.broadcast("updatePlayers", { playersPositions });
     }
   }
@@ -210,10 +217,10 @@ export class Room {
     const TILE_SIZE = 40;
     const oldX = player.pixelPosition.x;
     const oldY = player.pixelPosition.y;
-
+    
     const centerX = player.position.x * TILE_SIZE + TILE_SIZE / 2;
     const centerY = player.position.y * TILE_SIZE + TILE_SIZE / 2;
-
+    
     const playerCenterX = player.pixelPosition.x + TILE_SIZE / 2;
     const playerCenterY = player.pixelPosition.y + TILE_SIZE / 2;
 
@@ -223,12 +230,12 @@ export class Room {
     if (player.lastAxis && newAxis && player.lastAxis !== newAxis) {
       isChangingAxis = true;
     }
-
+    
     if (isChangingAxis) {
       const CENTER_THRESHOLD = TILE_SIZE * 0.4;
       const distFromCenterX = Math.abs(playerCenterX - centerX);
       const distFromCenterY = Math.abs(playerCenterY - centerY);
-
+      
       if (distFromCenterX > CENTER_THRESHOLD || distFromCenterY > CENTER_THRESHOLD) {
         return false;
       } else {
@@ -240,10 +247,10 @@ export class Room {
         return true;
       }
     }
-
+    
     let newX = player.pixelPosition.x;
     let newY = player.pixelPosition.y;
-
+    
     if (dx !== 0) {
       if (dx > 0) {
         const rightEdge = player.pixelPosition.x + TILE_SIZE + dx;
@@ -301,7 +308,7 @@ export class Room {
 
     const newTileX = Math.floor((newX + TILE_SIZE / 2) / TILE_SIZE);
     const newTileY = Math.floor((newY + TILE_SIZE / 2) / TILE_SIZE);
-
+    
     player.pixelPosition.x = newX;
     player.pixelPosition.y = newY;
 
@@ -313,7 +320,7 @@ export class Room {
     const powerUpIndex = this.powerUps.findIndex(
       (p) => p.x === player.position.x && p.y === player.position.y
     );
-
+    
     if (powerUpIndex !== -1) {
       const powerUp = this.powerUps[powerUpIndex];
       this.pickupPowerUp(name, powerUp.x, powerUp.y);
@@ -326,7 +333,7 @@ export class Room {
       return false;
     }
   }
-
+  
   pickupPowerUp(name, x, y) {
     const powerUpIndex = this.powerUps.findIndex(p => p.x === x && p.y === y);
     if (powerUpIndex === -1) {
@@ -358,7 +365,7 @@ export class Room {
     console.log(`Bomb at ${bomb.x},${bomb.y} exploding`);
     let mapChanged = false;
     this.bombs = this.bombs.filter(b => b !== bomb);
-
+    
     const blastTiles = [];
     const destroyedBlocks = []; // ← New array to store destroyed blocks
 
@@ -375,7 +382,7 @@ export class Room {
       for (let i = 1; i <= bomb.range; i++) {
         const checkX = bomb.x + dir.dx * i;
         const checkY = bomb.y + dir.dy * i;
-
+        
         if (
           checkX < 0 || checkX >= this.map.columns ||
           checkY < 0 || checkY >= this.map.rows
@@ -390,7 +397,7 @@ export class Room {
         if (tile === this.map.TILE_WALL) {
           break;
         }
-
+        
         blastTiles.push({ x: checkX, y: checkY });
 
         if (tile === this.map.TILE_BLOCK) {
@@ -430,7 +437,7 @@ export class Room {
         }
       }
     }
-
+    
     this.broadcast("bombExploded", {
       bomb: { x: bomb.x, y: bomb.y, owner: bomb.owner },
       blastTiles,
@@ -451,7 +458,7 @@ export class Room {
   placeBomb(name) {
     const player = this.players[name];
     if (!player || !player.isAlive()) return;
-
+    
     const { x, y } = player.position;
 
     const bombsByPlayer = this.bombs.filter(b => b.owner === name);
@@ -459,7 +466,7 @@ export class Room {
       console.log(`${name} has no bombs left`);
       return;
     }
-
+    
     const bomb = {
       x,
       y,
@@ -467,64 +474,34 @@ export class Room {
       range: player.explosionRange
     };
     this.bombs.push(bomb);
-
+    
     this.broadcast("bombPlaced", {
       x,
       y,
       owner: name
     });
-
+    
     setTimeout(() => {
       this.explodeBomb(bomb);
     }, 2000);
   }
-
-
-
+  
+  
   broadcast(event, data) {
     for (const player of Object.values(this.players)) {
-      if (!player.socket ) {
+       
+      if (!player.socket) {
         console.log(`Invalid socket for ${player.name}, skipping...`);
-        continue;
+        continue
+
       }
+
       player.socket.emit(event, data);
+
+      console.log("kkkkk", event ,data);
+      
     }
   }
 
-  startWaiting() {
-    this.RoomState = "waiting";
-
-
-    if (this.timeInt) return;
-
-    this.broadcast("waiting", { Counter: this.Counter });
-
-    this.timeInt = setInterval(() => {
-      this.Counter--;
-      if (this.Counter <= 0) {
-        clearInterval(this.timeInt);
-        this.timeInt = null;
-        console.log("waiting finished!");
-        this.startPreparing();
-      }
-    }, 1000);
-  }
-
-  startPreparing() {
-    this.RoomState = "preparing";
-
-    if (this.timeInt) return;
-
-    this.broadcast("preparing", { counter: this.counter });
-
-    this.timeInt = setInterval(() => {
-      this.counter--;
-      if (this.counter <= 0) {
-        clearInterval(this.timeInt);
-        this.timeInt = null;
-        console.log("Preparing finished");
-        this.startGame()
-      }
-    }, 1000);
-  }
+  
 }

@@ -1,22 +1,11 @@
 import { Server } from "socket.io";
-
-
-import {Room} from './../Game/room.js';
-
 import { game } from './../Game/game.js';
-
-
-
-import {Mutex} from "./mutex.js";
-
-
+import { Mutex } from "./mutex.js";
 
 export function setupSocketIO(server) {
   const io = new Server(server);
 
   io.on("connection", async (socket) => {
-
-
     // Join the game
     const name = (socket.handshake.query.name || "").trim()
     if (!name) {
@@ -24,7 +13,7 @@ export function setupSocketIO(server) {
       socket.disconnect();
       return;
     }
-    const room = await game.join(name, socket);
+    const room = game.join(name, socket);
 
     if (!room) {
       socket.disconnect();
@@ -37,59 +26,35 @@ export function setupSocketIO(server) {
     }
 
 
-    //for testing with single PLayer 
-    // room.startGame()
+  
 
-    const unlock = await room.mutex.lock();
-    try {
-      room.broadcast("joined", {
-        RoomState: room.RoomState,
-        nofPlayers: Object.keys(room.players).length,
-        Counter: room.Counter,
-      });
+    room.broadcast("joined", {
+      RoomState: room.RoomState,
+      nofPlayers: Object.keys(room.players).length,
+      Counter: room.Counter,
+    });
 
-      room.broadcast("MessageHistory", {
-        Messages: room.chatMessages,
-      });
-    } finally {
-      unlock();
-    }
-    console.log("playerJoined room " , Object.keys(game.rooms).length);
-    
+    room.broadcast("MessageHistory", {
+      Messages: room.chatMessages,
+    });
+
+
+    console.log("playerJoined room ", Object.keys(game.rooms).length);
+
 
 
     //receive Messagesimport { game } from '../Game/game.js';
 
-    socket.on("chatMessage", async (data) => {
-      const unlock = await room.mutex.lock();
+    socket.on("chatMessage", (data) => {
 
-      try {
-        room.chatMessages.push({ from: name, text: data.text });
-        room.broadcast("chatMessage", {
-          from: name,
-          text: data.text,
-        });
+      room.chatMessages.push({ from: name, text: data.text });
+      room.broadcast("chatMessage", {
+        from: name,
+        text: data.text,
+      });
 
-      } finally {
-        unlock()
-      }
+
     });
-
-
-
-    socket.on("Ready", async () => {
-      const unlock = await room.mutex.lock();
-      try {
-        room.readyPlayers.add(name);
-
-        if (room.readyPlayers.size === Object.keys(room.players).length) {
-          room.startGame();
-        }
-      } finally {
-        unlock();
-      }
-    });
-
 
     socket.on("placeBomb", async () => {
       const unlock = await room.mutex.lock();
@@ -144,18 +109,6 @@ export function setupSocketIO(server) {
         unlock();
       }
     });
-
-
-    // Handle messages
-    socket.on("message", async (message) => {
-      const unlock = await room.mutex.lock();
-      try {
-        console.log(`[${name}]: ${message}`);
-      } finally {
-        unlock()
-      }
-    });
-
 
 
     // Handle disconnection
