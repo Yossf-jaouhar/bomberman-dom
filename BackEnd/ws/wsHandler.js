@@ -58,6 +58,22 @@ function setupSocketIO(server) {
       }
     });
 
+
+
+    socket.on("Ready", async () => {
+      const unlock = await room.mutex.lock();
+      try {
+        room.readyPlayers.add(name);
+
+        if (room.readyPlayers.size === Object.keys(room.players).length) {
+          room.startGame();
+        }
+      } finally {
+        unlock();
+      }
+    });
+
+
     socket.on("placeBomb", async () => {
       const unlock = await room.mutex.lock();
       try {

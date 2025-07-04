@@ -14,6 +14,7 @@ class Room {
     this.map = null;
     this.bombs = [];
     this.powerUps = [];
+    this.readyPlayers = new Set();
   }
   removePlayer(name) {
     delete this.players[name];
@@ -22,6 +23,11 @@ class Room {
     }
   }
   startGame() {
+
+    console.log("@@@@@@@@@@@@2");
+    
+    this.broadcast("start", null)
+
     if (this.RoomState == "started") {
       return
     }
@@ -62,6 +68,8 @@ class Room {
       map: this.map.tiles,
       players: publicPlayersData
     });
+
+    
     for (const player of Object.values(this.players)) {
       player.socket.emit("playerData", {
         name: player.name,
@@ -480,7 +488,6 @@ class Room {
         clearInterval(this.timeInt);
         this.timeInt = null;
         console.log("Preparing finished");
-        this.startGame();
       }
     }, 1000);
   }

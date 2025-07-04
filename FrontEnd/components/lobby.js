@@ -75,10 +75,12 @@ export default function Lobby() {
   });
 
   // Handle navigation safely after counter hits zero
-  if (counter() === 0 && counter() !== null) {
-    Myapp.navigate("/game");
-    return null;
+  if (roomState() == "preparing"&& counter() === 0) {
+    socket.emit("Ready")
   }
+  socket.on("start", () => {
+    Myapp.navigate("/game")
+  })
 
   return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
     E("div", { class: "LobbyState df center gp24" }).childs(
