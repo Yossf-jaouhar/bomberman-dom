@@ -29,10 +29,13 @@ export default function registerWSListeners() {
   });
 
   socket.on("gameStart", (data) => {
+    console.log('gameStart' , data);
     pendingState.gameStart = data;
   });
   
   socket.on("playerData", (data) => {
+    console.log("playerData" , data);
+    
     Myapp.navigate("/game")
     pendingState.playerData = data;
   });

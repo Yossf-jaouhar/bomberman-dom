@@ -5,8 +5,7 @@ import Myapp from "../helper/appInstance.js";
 export default function Start() {
 
   if (isSocketConnected()) {
-    console.log("connected redirecting");
-
+    console.log("connected already !  redirecting ...");
     Myapp.navigate("/lobby")
   }
   let inputValue = Myapp.getGlobalState("name") || "";
@@ -40,7 +39,7 @@ export default function Start() {
         placeholder: "Your nickname...",
         value: inputValue,
         $input: (e) => {
-          inputValue = e.target.value;  // Update local input value only
+          inputValue = e.target.value;
         },
         $keydown: (e) => {
           if (e.key === "Enter") {

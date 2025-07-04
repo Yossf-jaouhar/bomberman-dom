@@ -1,27 +1,23 @@
 import { E } from "../frameWork/DOM.js";
 import Myapp from "../helper/appInstance.js";
 import { getSocket } from "../ws/wsHandler.js";
-
+let isOn = false
 export default function Chat() {
     const socket = getSocket();
     const name = Myapp.getGlobalState("name");
 
     const [chatMessages, setChatMessages] = Myapp.useState([]);
     const [hidden, setHidden] = Myapp.useState(false);
-    socket.off("chatMessage")
-    socket.off("MessageHistory")
-    // Listen for chat messages from the server
-    socket.on("MessageHistory", (data) => {
-        setChatMessages(data.Messages)
-    })
-    socket.on("chatMessage", (data) => {
-        setChatMessages((prev) => [...prev, data]);
-    });
-
-    // Send a new message
+    if (!isOn) {
+        socket.on("MessageHistory", (data) => {
+            setChatMessages(data.Messages)
+        })
+        socket.on("chatMessage", (data) => {
+            setChatMessages((prev) => [...prev, data]);
+        });
+    }
     function sendMessage(value) {
         if (!value.trim()) return;
-        // setChatMessages((prev) => [...prev, { from: "me", text: value.trim() }]);
         socket.emit("chatMessage", { from: name, text: value.trim() });
     }
 
@@ -35,7 +31,6 @@ export default function Chat() {
         E('div', {
             class: `chat spB df fc ${hidden() ? 'hidden' : ''}`,
         }).childs(
-            // Messages container
             E('div', { class: 'chat-messages strech gp16' }).childs(
                 ...(chatMessages() || []).map(msg =>
                     E('div', {
@@ -43,7 +38,6 @@ export default function Chat() {
                     }).childs(`${msg.from}:`, E("strong").childs(`${msg.text}`))
                 )
             ),
-            // Input
             E('div', { class: 'chat-input df gp8' }).childs(
                 E('input', {
                     attrs: { placeholder: 'Type a message...' },

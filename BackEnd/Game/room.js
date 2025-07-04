@@ -7,8 +7,9 @@ class Room {
     this.game = gameInstance;
     this.RoomState = null;
     this.players = {};
-    this.Counter = 5;
-    this.counter = 3;
+    this.Counter = 20;
+    this.counter = 10;
+    this.c = 7;
     this.timeInt = null;
     this.chatMessages = [];
     this.map = null;
@@ -16,18 +17,62 @@ class Room {
     this.powerUps = [];
     this.readyPlayers = new Set();
   }
-  removePlayer(name) {
-    delete this.players[name];
-    if (Object.keys(this.players).length === 0) {
-      this.game.removeRoom(this);
+
+  addPlayer(name, socket) {
+    const player = new Player(name, socket);
+    this.players[name] = player;
+
+    const playerCount = Object.keys(this.players).length;
+
+    if (playerCount === 1) {
+      this.RoomState = "solo";
+    }
+    if (playerCount > 1) {
+      this.startWaiting();
+    }
+    if (playerCount === 4) {
+      this.startPreparing();
     }
   }
+  startWaiting() {
+    if (this.RoomState ="waiting") return;
+
+    this.RoomState = "waiting";
+    if (this.timeInt) return;
+
+    this.broadcast("waiting", { Counter: this.Counter });
+
+    this.timeInt = setInterval(() => {
+      this.Counter--;
+      if (this.Counter <= 0) {
+        clearInterval(this.timeInt);
+        this.timeInt = null;
+        console.log("waiting finished!");
+        this.startPreparing();
+      }
+    }, 1000);
+  }
+
+  startPreparing() {
+    if (this.RoomState = "preparing") return ; 
+    this.RoomState = "preparing";
+    if (this.timeInt) return;
+
+    this.broadcast("preparing", { counter: this.counter });
+
+    this.timeInt = setInterval(() => {
+      this.counter--;
+      if (this.counter <= 0) {
+        clearInterval(this.timeInt);
+        this.timeInt = null;
+        this.startGame()
+        console.log("Preparing finished");
+      }
+    }, 1000);
+  }
+
   startGame() {
-
-    console.log("@@@@@@@@@@@@2");
-    
-    this.broadcast("start", null)
-
+    console.log("Game Started");
     if (this.RoomState == "started") {
       return
     }
@@ -69,7 +114,7 @@ class Room {
       players: publicPlayersData
     });
 
-    
+
     for (const player of Object.values(this.players)) {
       player.socket.emit("playerData", {
         name: player.name,
@@ -93,6 +138,13 @@ class Room {
       this.update();
     }, 1000 / 60);
 
+  }
+
+  removePlayer(name) {
+    delete this.players[name];
+    if (Object.keys(this.players).length === 0) {
+      this.game.removeRoom(this);
+    }
   }
 
   setPlayerDirection(name, direction) {
@@ -272,11 +324,6 @@ class Room {
     }
   }
 
-
-
-
-
-
   pickupPowerUp(name, x, y) {
     const powerUpIndex = this.powerUps.findIndex(p => p.x === x && p.y === y);
     if (powerUpIndex === -1) {
@@ -291,7 +338,7 @@ class Room {
     const updatedValue = player.addPowerUp(powerUp.type);
     this.powerUps.splice(powerUpIndex, 1);
 
-      this.broadcast('powerUpPicked', {
+    this.broadcast('powerUpPicked', {
       name,
       type: powerUp.type,
       x,
@@ -301,6 +348,7 @@ class Room {
 
     console.log(`${name} picked up ${powerUp.type}`);
   }
+
 
 
   explodeBomb(bomb) {
@@ -428,69 +476,21 @@ class Room {
     }, 2000);
   }
 
-  addPlayer(name, socket) {
-    const player = new Player(name, socket);
-    this.players[name] = player;
-
-    const playerCount = Object.keys(this.players).length;
-
-    if (playerCount === 1) {
-      this.RoomState = "solo";
-    }
-    if (playerCount > 1) {
-      this.startWaiting();
-    }
-    if (playerCount === 4) {
-      this.startPreparing();
-    }
-  }
 
 
   broadcast(event, data) {
     for (const player of Object.values(this.players)) {
-      if (!player.socket || typeof player.socket.emit !== "function") {
-        console.warn(`Invalid socket for ${player.name}, skipping...`);
+      if (!player.socket ) {
+        console.log(`Invalid socket for ${player.name}, skipping...`);
         continue;
       }
       player.socket.emit(event, data);
+      console.log("message sent to " , player.name);
+      
     }
   }
 
-  startWaiting() {
-    this.RoomState = "waiting";
 
-
-    if (this.timeInt) return;
-
-    this.broadcast("waiting", { Counter: this.Counter });
-
-    this.timeInt = setInterval(() => {
-      this.Counter--;
-      if (this.Counter <= 0) {
-        clearInterval(this.timeInt);
-        this.timeInt = null;
-        console.log("waiting finished!");
-        this.startPreparing();
-      }
-    }, 1000);
-  }
-
-  startPreparing() {
-    this.RoomState = "preparing";
-
-    if (this.timeInt) return;
-
-    this.broadcast("preparing", { counter: this.counter });
-
-    this.timeInt = setInterval(() => {
-      this.counter--;
-      if (this.counter <= 0) {
-        clearInterval(this.timeInt);
-        this.timeInt = null;
-        console.log("Preparing finished");
-      }
-    }, 1000);
-  }
 }
 
 module.exports = Room;

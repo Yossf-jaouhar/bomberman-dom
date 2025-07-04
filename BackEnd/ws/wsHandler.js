@@ -39,7 +39,8 @@ function setupSocketIO(server) {
     } finally {
       unlock();
     }
-
+    console.log("playerJoined room " , Object.keys(game.rooms).length);
+    
 
 
     //receive Messages

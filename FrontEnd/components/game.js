@@ -13,8 +13,6 @@ import { pendingState } from "../helper/wsData.js";
 export default function Game() {
   let socket = getSocket();
   if (!socket) {
-    // connectWebSocket("chakir");
-    // socket = getSocket();
     Myapp.navigate("/")
     return
   }
@@ -27,7 +25,7 @@ export default function Game() {
   const [mapTiles, setMapTiles] = Myapp.useState([]);
   const [players, setPlayers] = Myapp.useState([]);
   const [playerName, setPlayerName] = Myapp.useState("");
-  const [playerLives, setPlayerLives] = Myapp.useState(5);
+  const [playerLives, setPlayerLives] = Myapp.useState(3);
   const [currentPlayer, setCurrentPlayer] = Myapp.useState(null);
   const [gameOver, setGameOver] = Myapp.useState(false);
   const [gameWin, setGameWin] = Myapp.useState(false);

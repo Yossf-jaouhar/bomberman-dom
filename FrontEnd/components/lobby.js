@@ -2,18 +2,12 @@ import { E } from "../frameWork/DOM.js";
 import Myapp from "../helper/appInstance.js";
 import { getSocket, isSocketConnected } from "../ws/wsHandler.js";
 import chat from "./chat.js";
-
+let listeningOn = false
 export default function Lobby() {
   if (!isSocketConnected()) {
     Myapp.navigate("/");
     return;
   }
-  // let name = Myapp.getGlobalState("name");
-  // if (!name) {
-  //   Myapp.navigate("/");
-  //   return;
-  // }
-
   const socket = getSocket();
 
   let [nOfPlayers, setNoOfPlayers] = Myapp.useState(1);
@@ -32,7 +26,6 @@ export default function Lobby() {
 
     intervalId = setInterval(() => {
       currentValue -= 1;
-
       if (currentValue > 0) {
         setCounter(currentValue);
       } else {
@@ -43,44 +36,37 @@ export default function Lobby() {
     }, 1000);
   }
 
-  socket.off("joined");
-  socket.off("waiting");
-  socket.off("preparing");
+  if (!listeningOn) {
+    socket.on("joined", (data) => {
+      console.log('waiting ' , data);
+      setNoOfPlayers(data.nofPlayers);
+      setCounter(data.Counter);
+      setRoomState(data.RoomState);
+      if (data.Counter != null) {
+        startCountdown(data.Counter);
+      }
+    });
 
-  socket.on("joined", (data) => {
-    setNoOfPlayers(data.nofPlayers);
-    setCounter(data.Counter);
-    setRoomState(data.RoomState);
-    if (data.Counter != null) {
-      startCountdown(data.Counter);
-    }
-  });
+    socket.on("waiting", (data) => {
+      console.log('waiting ' , data);
+      setRoomState("waiting");
+      setCounter(data.Counter);
+      if (data.Counter != null) {
+        startCountdown(data.Counter);
+      }
+    });
 
-  socket.on("waiting", (data) => {
-    setRoomState("waiting");
-    setCounter(data.Counter);
+    socket.on("preparing", (data) => {
+      console.log('Preparing ' , data);
+      setRoomState("preparing");
+      setCounter(data.counter);
 
-    if (data.Counter != null) {
-      startCountdown(data.Counter);
-    }
-  });
-
-  socket.on("preparing", (data) => {
-    setRoomState("preparing");
-    setCounter(data.counter);
-
-    if (data.counter != null) {
-      startCountdown(data.counter);
-    }
-  });
-
-  // Handle navigation safely after counter hits zero
-  if (roomState() == "preparing"&& counter() === 0) {
-    socket.emit("Ready")
+      if (data.counter != null) {
+        startCountdown(data.counter);
+      }
+    });
+    listeningOn = true
   }
-  socket.on("start", () => {
-    Myapp.navigate("/game")
-  })
 
   return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
     E("div", { class: "LobbyState df center gp24" }).childs(
