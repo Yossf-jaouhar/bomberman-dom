@@ -1,7 +1,6 @@
-// game.js
-const Room = require('./room.js');
+import {Room} from './room.js'
 
-class Game {
+export class Game {
     constructor() {
         this.rooms = {};
     }
@@ -35,9 +34,5 @@ class Game {
 
 }
 
-const game = new Game();
 
-module.exports = {
-    Game,
-    game,
-};
+export const game = new Game();

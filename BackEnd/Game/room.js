@@ -1,8 +1,11 @@
-const { game } = require('./game.js');
-const GameMap = require('./map');
-const Player = require('./player');
-const POWERUPS = ["Bomb", "Flame", "Speed"];
-class Room {
+import  {game } from './game.js'
+import {GameMap} from './map.js'
+import {Player} from './player.js'
+
+const POWERUPS = ["Bomb", "Flame", "Speed"]
+
+
+export class Room {
   constructor(gameInstance) {
     this.game = gameInstance;
     this.RoomState = null;
@@ -488,9 +491,8 @@ class Room {
         clearInterval(this.timeInt);
         this.timeInt = null;
         console.log("Preparing finished");
+        this.startGame()
       }
     }, 1000);
   }
 }
-
-module.exports = Room;

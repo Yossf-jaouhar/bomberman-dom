@@ -75,7 +75,7 @@ export default function Lobby() {
   });
 
   // Handle navigation safely after counter hits zero
-  if (roomState() == "preparing"&& counter() === 0) {
+  if (roomState() == "preparing"&& counter() === 0 ) {
     socket.emit("Ready")
   }
   socket.on("start", () => {

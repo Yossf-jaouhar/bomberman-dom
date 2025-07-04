@@ -1,8 +1,17 @@
-const { Server } = require("socket.io");
-const { game } = require("../Game/game");
-const Mutex = require("./mutex");
+import { Server } from "socket.io";
 
-function setupSocketIO(server) {
+
+import {Room} from './../Game/room.js';
+
+import { game } from './../Game/game.js';
+
+
+
+import {Mutex} from "./mutex.js";
+
+
+
+export function setupSocketIO(server) {
   const io = new Server(server);
 
   io.on("connection", async (socket) => {
@@ -16,6 +25,12 @@ function setupSocketIO(server) {
       return;
     }
     const room = await game.join(name, socket);
+
+    if (!room) {
+      socket.disconnect();
+      return;
+    }
+
 
     if (!room.mutex) {
       room.mutex = new Mutex();
@@ -42,7 +57,8 @@ function setupSocketIO(server) {
 
 
 
-    //receive Messages
+    //receive Messagesimport { game } from '../Game/game.js';
+
     socket.on("chatMessage", async (data) => {
       const unlock = await room.mutex.lock();
 
@@ -157,5 +173,3 @@ function setupSocketIO(server) {
 
   });
 }
-
-module.exports = setupSocketIO;
