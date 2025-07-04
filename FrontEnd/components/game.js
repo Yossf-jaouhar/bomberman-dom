@@ -197,11 +197,11 @@ export default function Game() {
 
 
 
-    gggg=requestAnimationFrame(gameRenderLoop);
+    requestAnimationFrame(gameRenderLoop);
   }
 
 
-  gggg=requestAnimationFrame(gameRenderLoop);
+  requestAnimationFrame(gameRenderLoop);
 
 
 
@@ -282,28 +282,41 @@ export default function Game() {
 
 
   function applyUpdatePlayers(data) {
-    // console.log("updatePlayers", data);
+    setPlayers((prevPlayers = []) => {
+      const updatedPlayers = [];
 
+      const incomingNames = Object.keys(data.playersPositions);
 
-    setPlayers((prevPlayers) =>
-      prevPlayers.map((player) => {
-        const updatedPos = data.playersPositions[player.name];
-        if (updatedPos) {
-          return {
-            ...player,
-            pixelX: updatedPos.pixelX,
-            pixelY: updatedPos.pixelY,
-            tileX: updatedPos.tileX,
-            tileY: updatedPos.tileY,
-          };
+      const playerMap = new Map(prevPlayers.map(p => [p.name, p]));
+
+      for (const name of incomingNames) {
+        const pos = data.playersPositions[name];
+        const existing = playerMap.get(name);
+
+        if (existing) {
+          updatedPlayers.push({
+            ...existing,
+            pixelX: pos.pixelX,
+            pixelY: pos.pixelY,
+            tileX: pos.tileX,
+            tileY: pos.tileY,
+          });
+        } else {
+          updatedPlayers.push({
+            name,
+            pixelX: pos.pixelX,
+            pixelY: pos.pixelY,
+            tileX: pos.tileX,
+            tileY: pos.tileY,
+          });
         }
-        return player;
-      })
-    );
+      }
 
+      return updatedPlayers;
+    });
 
-    if (data.playersPositions[playerName()]) {
-      const pos = data.playersPositions[playerName()];
+    const pos = data.playersPositions[playerName()];
+    if (pos) {
       setCurrentPlayer((prev) => ({
         ...prev,
         pixelX: pos.pixelX,
@@ -313,6 +326,7 @@ export default function Game() {
       }));
     }
   }
+
 
 
   function applyPlayerDied(data) {
