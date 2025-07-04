@@ -1,8 +1,11 @@
-const { game } = require('./game.js');
-const GameMap = require('./map');
-const Player = require('./player');
-const POWERUPS = ["Bomb", "Flame", "Speed"];
-class Room {
+import  {game } from './game.js'
+import {GameMap} from './map.js'
+import {Player} from './player.js'
+
+const POWERUPS = ["Bomb", "Flame", "Speed"]
+
+
+export class Room {
   constructor(gameInstance) {
     this.game = gameInstance;
     this.RoomState = null;
@@ -485,12 +488,43 @@ class Room {
         continue;
       }
       player.socket.emit(event, data);
-      console.log("message sent to " , player.name);
-      
     }
   }
 
+  startWaiting() {
+    this.RoomState = "waiting";
 
+
+    if (this.timeInt) return;
+
+    this.broadcast("waiting", { Counter: this.Counter });
+
+    this.timeInt = setInterval(() => {
+      this.Counter--;
+      if (this.Counter <= 0) {
+        clearInterval(this.timeInt);
+        this.timeInt = null;
+        console.log("waiting finished!");
+        this.startPreparing();
+      }
+    }, 1000);
+  }
+
+  startPreparing() {
+    this.RoomState = "preparing";
+
+    if (this.timeInt) return;
+
+    this.broadcast("preparing", { counter: this.counter });
+
+    this.timeInt = setInterval(() => {
+      this.counter--;
+      if (this.counter <= 0) {
+        clearInterval(this.timeInt);
+        this.timeInt = null;
+        console.log("Preparing finished");
+        this.startGame()
+      }
+    }, 1000);
+  }
 }
-
-module.exports = Room;

@@ -1,14 +1,18 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const { Server } = require('socket.io');
-const { game } = require('./Game/game'); 
-const setupSocketIO = require('./ws/wsHandler');
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const PORT = 3000;
+import {setupSocketIO} from './ws/wsHandler.js';
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const frontendDir = path.join(__dirname, '..', 'FrontEnd');
 const indexFile = path.join(frontendDir, 'index.html');
 
+const PORT = 3000;
 const contentTypes = {
   '.html': 'text/html',
   '.js': 'application/javascript',
@@ -20,16 +24,13 @@ const contentTypes = {
   '.json': 'application/json',
 };
 
-// Create HTTP server
 const server = http.createServer((req, res) => {
   if (req.url.startsWith('/api/')) {
-    // Simple API example
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ message: `API response for ${req.url}` }));
     return;
   }
 
-  // Serve static files
   const safePath = path.normalize(req.url).replace(/^(\.\.[\/\\])+/, '');
   const staticFilePath = path.join(frontendDir, safePath);
 
@@ -48,7 +49,6 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // SPA fallback: serve index.html
   fs.readFile(indexFile, (err, data) => {
     if (err) {
       res.writeHead(500);
@@ -59,7 +59,7 @@ const server = http.createServer((req, res) => {
   });
 });
 
-setupSocketIO(server)
+setupSocketIO(server);
 
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

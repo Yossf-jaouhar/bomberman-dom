@@ -1,4 +1,4 @@
-class Mutex {
+export class Mutex {
     constructor() {
       this.locked = false;
       this.queue = [];
@@ -25,5 +25,4 @@ class Mutex {
     }
   }
   
-  module.exports = Mutex;
   

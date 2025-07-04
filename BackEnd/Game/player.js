@@ -1,4 +1,4 @@
-class Player {
+export class Player {
   constructor(name, socket) {
     this.name = name;
     this.socket = socket;
@@ -72,5 +72,3 @@ class Player {
     return this.lives > 0;
   }
 }
-
-module.exports = Player;

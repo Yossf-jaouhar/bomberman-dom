@@ -61,11 +61,14 @@ export default function Lobby() {
       setRoomState("preparing");
       setCounter(data.counter);
 
-      if (data.counter != null) {
-        startCountdown(data.counter);
-      }
-    });
-    listeningOn = true
+    if (data.counter != null) {
+      startCountdown(data.counter);
+    }
+  });
+
+  // Handle navigation safely after counter hits zero
+  if (roomState() == "preparing"&& counter() === 0 ) {
+    socket.emit("Ready")
   }
 
   return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
