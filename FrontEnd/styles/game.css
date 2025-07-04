@@ -118,3 +118,20 @@
   width: calc(15*40px);
   height: calc(13*40px);
 }
+
+
+
+
+.game-win-popup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #4caf50;
+  color: white;
+  padding: 30px;
+  border-radius: 10px;
+  font-size: 24px;
+  text-align: center;
+  z-index: 1000;
+}

@@ -30,6 +30,7 @@ export default function Game() {
   const [playerLives, setPlayerLives] = Myapp.useState(5);
   const [currentPlayer, setCurrentPlayer] = Myapp.useState(null);
   const [gameOver, setGameOver] = Myapp.useState(false);
+  const [gameWin, setGameWin] = Myapp.useState(false);
   const [bombs, setBombs] = Myapp.useState([]);
   const [explosions, setExplosions] = Myapp.useState([]);
   const [speed, setSpeed] = Myapp.useState(2);
@@ -297,8 +298,13 @@ export default function Game() {
     );
     if (data.name === playerName()) {
       setGameOver(true);
-        }
+    }
+
+    if (players().length === 1) {
+      setGameWin(true);
+    }
   }
+
 
 
 
@@ -332,6 +338,23 @@ export default function Game() {
 
           },
         }).childs("restart")
+      ) : null,
+
+    gameWin()
+      ? E("div", {
+        class: "game-over-popup",
+      }).childs(
+        "🎉 You Win! 🎉",
+        E("div", { class: "childtxt" }).childs("Great job, champ!"),
+        E("button", {
+          class: "Mybtn",
+          $click: () => {
+            Myapp.setGlobalState("name", null);
+            cleanupPlayerMovement();
+            socket.close();
+            Myapp.navigate("/");
+          },
+        }).childs("Play Again")
       )
       : null
   );
