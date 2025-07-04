@@ -7,6 +7,7 @@ import GameHeader from "./header.js";
 import usePlayerMovement, { cleanupPlayerMovement } from "../helper/movement.js";
 import BombDivs from "./bom.js";
 import registerWSListeners from "../ws/wsListeners.js";
+import { pendingState } from "../helper/wsData.js";
 
 
 export default function Game() {
@@ -42,24 +43,8 @@ export default function Game() {
 
 
 
-  const pendingState = {
-    gameStart: null,
-    playerData: null,
-    updatePlayers: null,
-    mapChange: null,
-    lifeUpdate: null,
-    playerDied: null,
-    powerUps: [],
-    bombsPlaced: [],
-    bombsExploded: [],
-    explosionsFullUpdate: null,
-    powerUpPicked: null,
-    speed: null,
-    maxBombs: null,
-    explosionRange: null
-  };
-
-  registerWSListeners(pendingState)
+ 
+  registerWSListeners()
 
   function gameRenderLoop() {
     if (pendingState.bombsPlaced.length > 0) {

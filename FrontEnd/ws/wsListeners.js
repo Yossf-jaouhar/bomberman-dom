@@ -1,9 +1,10 @@
 import Myapp from "../helper/appInstance.js";
+import { pendingState } from "../helper/wsData.js";
 import { getSocket } from "../ws/wsHandler.js";
 
 let listenersRegistered = false;
 
-export default function registerWSListeners(pendingState) {
+export default function registerWSListeners() {
   if (listenersRegistered) {
     return;
   }
@@ -30,8 +31,9 @@ export default function registerWSListeners(pendingState) {
   socket.on("gameStart", (data) => {
     pendingState.gameStart = data;
   });
-
+  
   socket.on("playerData", (data) => {
+    Myapp.navigate("/game")
     pendingState.playerData = data;
   });
 
@@ -58,7 +60,7 @@ export default function registerWSListeners(pendingState) {
   socket.on("powerUpPicked", (data) => {
     pendingState.powerUpPicked = data;
   });
-  socket.on("close", (data) => {
-   Myapp.navigate('/')
-  });
+  // socket.on("close", (data) => {
+  //  Myapp.navigate('/')
+  // });
 }

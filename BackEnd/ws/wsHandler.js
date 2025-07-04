@@ -3,8 +3,6 @@ const { game } = require("../Game/game");
 const Mutex = require("./mutex");
 
 function setupSocketIO(server) {
-  console.log("Setting up Socket.IO...");
-
   const io = new Server(server);
 
   io.on("connection", async(socket) => {
