@@ -5,7 +5,7 @@ export const pendingState = {
     mapChange: null,
     lifeUpdate: null,
     playerDied: null,
-    powerUps: [],
+    powerUps: {},
     bombsPlaced: [],
     bombsExploded: [],
     explosionsFullUpdate: null,

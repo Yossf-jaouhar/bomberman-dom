@@ -36,14 +36,14 @@ export default function Game() {
   const [maxBombs, setMaxBoms] = Myapp.useState(3);
   const [explosionRange, setExplosionRange] = Myapp.useState(4);
   const [powerUps, setPowerUps] = Myapp.useState([]);
-
+  console.log("inside powerups ", powerUps());
 
   usePlayerMovement();
 
 
 
 
- 
+
   registerWSListeners()
 
   function gameRenderLoop() {
@@ -142,9 +142,9 @@ export default function Game() {
     }
 
     //powerUps
-    if (Array.isArray(pendingState.powerUps) && pendingState.powerUps.length > 0) {
-      applyPowerUps(pendingState.powerUps);
-      pendingState.powerUps = [];
+    if (Object.keys(pendingState.powerUps).length != 0) {
+      setPowerUps((prev) => [...prev, pendingState.powerUps]);
+      pendingState.powerUps = {};
     }
 
     if (pendingState.powerUpPicked) {
@@ -187,20 +187,9 @@ export default function Game() {
 
 
 
-  function applyPowerUps(data) {
-    const newPowers = Array.isArray(data) ? data : [data];
 
-    setPowerUps((prev) => {
-      const safePrev = Array.isArray(prev) ? prev : [];
-      return [...safePrev, ...newPowers];
-    });
-  }
 
   function PowerUpDivs(powerUps, tileSize) {
-    if (!Array.isArray(powerUps) || (Array.isArray(powerUps) && powerUps.length == 0)) {
-      return []
-    }
-
     return powerUps.map((p, index) =>
       E("div", {
         class: `power-up ${p.type}`,
