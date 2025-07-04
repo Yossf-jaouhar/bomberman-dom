@@ -1,14 +1,18 @@
 import { E } from "../frameWork/DOM.js";
 import Myapp from "../helper/appInstance.js";
-import { getSocket } from "../ws/wsHandler.js";
+import { getSocket, isSocketConnected } from "../ws/wsHandler.js";
 import chat from "./chat.js";
 
 export default function Lobby() {
-  let name = Myapp.getGlobalState("name");
-  if (!name) {
+  if (!isSocketConnected()) {
     Myapp.navigate("/");
     return;
   }
+  // let name = Myapp.getGlobalState("name");
+  // if (!name) {
+  //   Myapp.navigate("/");
+  //   return;
+  // }
 
   const socket = getSocket();
 
