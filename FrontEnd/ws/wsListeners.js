@@ -54,6 +54,8 @@ export default function registerWSListeners() {
   });
 
   socket.on("powerUpSpawned", (data) => {
+    console.log("powerUpspawned");
+    
     pendingState.powerUps = data;
   });
 

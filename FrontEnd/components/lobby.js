@@ -51,8 +51,6 @@ export default function Lobby() {
     setNoOfPlayers(data.nofPlayers);
     setCounter(data.Counter);
     setRoomState(data.RoomState);
-
-    // Optionally start local countdown if needed
     if (data.Counter != null) {
       startCountdown(data.Counter);
     }
