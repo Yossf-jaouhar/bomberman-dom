@@ -16,9 +16,6 @@ export class Room {
     this.map = null;
     this.bombs = [];
     this.powerUps = [];
-
-   
-
   }
   addPlayer(name, socket) {
 
@@ -46,12 +43,6 @@ export class Room {
   startWaiting  (nofplayers) {
     if (this.RoomState =="waiting") return
     this.RoomState = "waiting";
-
-    // if (this.timeInt) {
-    //   clearTimeout(this.timeInt)
-    // };
-console.log("oh no");
-
     this.timeInt = setInterval(() => {
       this.Counter--;
       this.broadcast("waiting", { Counter: this.Counter , nofplayers});
@@ -65,8 +56,9 @@ console.log("oh no");
   }
 
   startPreparing() {
+    if (this.RoomState =="preparing") return
     this.RoomState = "preparing";
-
+    
     if (this.timeInt) return;
 
     this.timeInt = setInterval(() => {

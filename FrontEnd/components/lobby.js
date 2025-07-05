@@ -17,8 +17,6 @@ export default function Lobby() {
 
   if (!listeningOn) {
     socket.on("waiting", (data) => {
-      console.log(1)
-  
       setRoomState("waiting");
       setCounter(data.Counter);
       setNoOfPlayers(data.nofplayers);
@@ -39,6 +37,7 @@ export default function Lobby() {
     }
     listeningOn = true;
   }
+
   return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
     E("div", { class: "LobbyState df center gp24" }).childs(
       E("div", { class: "df fc gp8 center" }).childs(
