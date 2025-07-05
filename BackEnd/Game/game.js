@@ -22,14 +22,16 @@ export class Game {
     for (const id in this.rooms) {
       const room = this.rooms[id];
 
+      console.log("hi yosf-------------->", room.RoomState);
       if ((room.RoomState === "preparing")) {
-        console.log("hi yosf-------------->", room.RoomState);
-        break
+              console.log("hi yosf-------------->", room.RoomState);
+
+        continue
       }
 
-       if (room.RoomState === "started") {
+      if (room.RoomState === "started") {
         console.log("hi yosf-------------->", room.RoomState);
-        break
+        continue
       }
 
       if (Object.keys(room.players).length < 4) {
