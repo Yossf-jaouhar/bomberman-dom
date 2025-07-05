@@ -1,6 +1,7 @@
 import { GameMap } from "./map.js";
 import { Player } from "./player.js";
 
+
 const POWERUPS = ["Bomb", "Flame", "Speed"];
 
 export class Room {
@@ -8,28 +9,28 @@ export class Room {
     this.game = gameInstance;
     this.RoomState = null;
     this.players = {};
-    this.Counter = 3;
-    this.counter = 2;
+    this.Counter = 20;
+    this.counter = 10;
     this.timeInt = null;
     this.chatMessages = [];
     this.map = null;
     this.bombs = [];
     this.powerUps = [];
+
+   
+
   }
   addPlayer(name, socket) {
-   
 
     const player = new Player(name, socket);
     this.players[name] = player;
-
+    
     const playerCount = Object.keys(this.players).length;
-
+    
     this.broadcast("playerJoined", {
       name,
       players: Object.keys(this.players),
     });
-
-
 
     if (playerCount === 1) {
       this.RoomState = "solo";
@@ -42,10 +43,14 @@ export class Room {
     }
   }
 
-  startWaiting(nofplayers) {
+  startWaiting  (nofplayers) {
+    if (this.RoomState =="waiting") return
     this.RoomState = "waiting";
 
-    if (this.timeInt) return;
+    // if (this.timeInt) {
+    //   clearTimeout(this.timeInt)
+    // };
+console.log("oh no");
 
     this.timeInt = setInterval(() => {
       this.Counter--;
