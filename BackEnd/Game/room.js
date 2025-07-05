@@ -44,17 +44,14 @@ addPlayer(name, socket) {
 
 
   startWaiting() {
-
-    
     this.RoomState = "waiting";
 
 
     if (this.timeInt) return;
 
-    this.broadcast("waiting", { Counter: this.Counter });
-
     this.timeInt = setInterval(() => {
       this.Counter--;
+      this.broadcast("waiting", { Counter: this.Counter });
       if (this.Counter <= 0) {
         clearInterval(this.timeInt);
         this.timeInt = null;
@@ -67,10 +64,9 @@ addPlayer(name, socket) {
   
 
   startPreparing() {
-    
     this.RoomState = "preparing";
+    
     if (this.timeInt) return;
-
     
     this.timeInt = setInterval(() => {
       this.counter--;
