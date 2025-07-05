@@ -36,27 +36,11 @@ export class Room {
     }
     if (playerCount > 1) {
       this.startWaiting(playerCount);
-      this.jointoroom(playerCount)
     }
     if (playerCount === 4) {
       this.startPreparing();
     }
   }
-
-  
-  
-  
-
-  jointoroom(playerCount){
-     this.broadcast("joined", {
-      RoomState: this.RoomState,
-      nofPlayers: Object.keys(this.players).length,
-      Counter: this.Counter,
-      playerCount,
-    });
-  }
-
-   
 
   startWaiting(nofplayers) {
     this.RoomState = "waiting";
@@ -65,7 +49,7 @@ export class Room {
 
     this.timeInt = setInterval(() => {
       this.Counter--;
-      this.broadcast("waiting", { Counter: this.Counter , nofplayers });
+      this.broadcast("waiting", { Counter: this.Counter , nofplayers});
       if (this.Counter <= 0) {
         clearInterval(this.timeInt);
         this.timeInt = null;
@@ -99,7 +83,7 @@ export class Room {
     }
 
     this.RoomState = "started";
-    this.broadcast("Start", null);
+    this.broadcast("Start");
 
     this.map = new GameMap(13, 15, 40);
     this.map.generateMap();

@@ -17,17 +17,11 @@ export default function Lobby() {
   let intervalId = null;
 
   if (!listeningOn) {
-    socket.on("joined", (data) => {
-      setCounter(data.Counter);
-      setNoOfPlayers(data.nofplayers);
-
-      setRoomState(data.RoomState);
-    });
 
     socket.on("waiting", (data) => {
-      console.log("lfarsi ----", data.nofplayers);
       setRoomState("waiting");
       setCounter(data.Counter);
+      setNoOfPlayers(data.nofplayers);
     });
 
     socket.on("preparing", (data) => {
@@ -37,7 +31,7 @@ export default function Lobby() {
 
     socket.on("playerJoined", (data) => {});
 
-    socket.on("Start", (data) => {
+    socket.on("Start", () => {
       Myapp.navigate("/game");
     });
 
