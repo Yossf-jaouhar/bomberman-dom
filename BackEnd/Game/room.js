@@ -11,7 +11,8 @@ export class Room {
     this.players = {};
     this.Counter = 20;
     this.counter = 10;
-    this.timeInt = null;
+    this.timeIntw = null;
+    this.timeIntp = null;
     this.chatMessages = [];
     this.map = null;
     this.bombs = [];
@@ -32,23 +33,33 @@ export class Room {
     if (playerCount === 1) {
       this.RoomState = "solo";
     }
-    if (playerCount > 1) {
-      this.startWaiting(playerCount);
+    if (playerCount == 2 || playerCount == 3) {
+      this.startWaiting();
     }
     if (playerCount === 4) {
       this.startPreparing();
     }
   }
 
-  startWaiting  (nofplayers) {
+  startWaiting  () {
+    
     if (this.RoomState =="waiting") return
     this.RoomState = "waiting";
-    this.timeInt = setInterval(() => {
+
+    if (this.timeIntw) return;
+
+    this.timeIntw = setInterval(() => {
+      const nofplayers = Object.keys(this.players).length;
       this.Counter--;
+      if (this.RoomState === "preparing") {
+         clearInterval(this.timeIntw);
+        this.timeIntw = null;
+        console.log("waiting finished!");
+      }
       this.broadcast("waiting", { Counter: this.Counter , nofplayers});
       if (this.Counter <= 0) {
-        clearInterval(this.timeInt);
-        this.timeInt = null;
+        clearInterval(this.timeIntw);
+        this.timeIntw = null;
         console.log("waiting finished!");
         this.startPreparing();
       }
@@ -59,15 +70,17 @@ export class Room {
     if (this.RoomState =="preparing") return
     this.RoomState = "preparing";
     
-    if (this.timeInt) return;
+    if (this.timeIntp) return;
 
-    this.timeInt = setInterval(() => {
+    this.timeIntp = setInterval(() => {
+      const nofplayers = Object.keys(this.players).length;
+
       this.counter--;
-      this.broadcast("preparing", { counter: this.counter });
+      this.broadcast("preparing", { counter: this.counter , nofplayers });
 
       if (this.counter <= 0) {
-        clearInterval(this.timeInt);
-        this.timeInt = null;
+        clearInterval(this.timeIntp);
+        this.timeIntp = null;
         console.log("Preparing finished");
         this.startGame();
       }
@@ -75,10 +88,6 @@ export class Room {
   }
 
   startGame() {
-    if (this.RoomState == "started") {
-      return;
-    }
-
     this.RoomState = "started";
     this.broadcast("Start");
 

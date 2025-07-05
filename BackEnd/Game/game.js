@@ -21,19 +21,14 @@ export class Game {
   join(playerName, socket) {
     for (const id in this.rooms) {
       const room = this.rooms[id];
-
-      console.log("hi yosf-------------->", room.RoomState);
+            
       if ((room.RoomState === "preparing")) {
-              console.log("hi yosf-------------->", room.RoomState);
-
         continue
       }
 
       if (room.RoomState === "started") {
-        console.log("hi yosf-------------->", room.RoomState);
         continue
-      }
-
+      }      
       if (Object.keys(room.players).length < 4) {
         if (!room.hasPlayer(playerName)) {
           room.addPlayer(playerName, socket);

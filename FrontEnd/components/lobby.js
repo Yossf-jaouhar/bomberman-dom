@@ -17,14 +17,18 @@ export default function Lobby() {
 
   if (!listeningOn) {
     socket.on("waiting", (data) => {
+      
       setRoomState("waiting");
       setCounter(data.Counter);
       setNoOfPlayers(data.nofplayers);
     });
 
     socket.on("preparing", (data) => {
+      console.log("hi-->",data);  
       setRoomState("preparing");
       setCounter(data.counter);
+      setNoOfPlayers(data.nofplayers);
+
     });
 
     socket.on("playerJoined", (data) => {});
