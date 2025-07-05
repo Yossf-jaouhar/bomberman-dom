@@ -1,8 +1,7 @@
-import {GameMap} from './map.js'
-import {Player} from './player.js'
+import { GameMap } from "./map.js";
+import { Player } from "./player.js";
 
-const POWERUPS = ["Bomb", "Flame", "Speed"]
-
+const POWERUPS = ["Bomb", "Flame", "Speed"];
 
 export class Room {
   constructor(gameInstance) {
@@ -17,41 +16,56 @@ export class Room {
     this.bombs = [];
     this.powerUps = [];
   }
-addPlayer(name, socket) {
-  console.log("hhhh", name);
+  addPlayer(name, socket) {
+   
+
+    const player = new Player(name, socket);
+    this.players[name] = player;
+
+    const playerCount = Object.keys(this.players).length;
+
+    this.broadcast("playerJoined", {
+      name,
+      players: Object.keys(this.players),
+    });
+
+
+
+    if (playerCount === 1) {
+      this.RoomState = "solo";
+    }
+    if (playerCount > 1) {
+      this.startWaiting(playerCount);
+      this.jointoroom(playerCount)
+    }
+    if (playerCount === 4) {
+      this.startPreparing();
+    }
+  }
+
   
-  const player = new Player(name, socket);
-  this.players[name] = player;
+  
+  
 
-  const playerCount = Object.keys(this.players).length;
-
-  this.broadcast("playerJoined", {
-    name,
-    players: Object.keys(this.players),  
-  });
-
-  if (playerCount === 1) {
-    this.RoomState = "solo";
+  jointoroom(playerCount){
+     this.broadcast("joined", {
+      RoomState: this.RoomState,
+      nofPlayers: Object.keys(this.players).length,
+      Counter: this.Counter,
+      playerCount,
+    });
   }
-  if (playerCount > 1) {
-    this.startWaiting();
-  }
-  if (playerCount === 4) {
-    this.startPreparing();
-  }
-}
 
+   
 
-
-  startWaiting() {
+  startWaiting(nofplayers) {
     this.RoomState = "waiting";
-
 
     if (this.timeInt) return;
 
     this.timeInt = setInterval(() => {
       this.Counter--;
-      this.broadcast("waiting", { Counter: this.Counter });
+      this.broadcast("waiting", { Counter: this.Counter , nofplayers });
       if (this.Counter <= 0) {
         clearInterval(this.timeInt);
         this.timeInt = null;
@@ -60,14 +74,12 @@ addPlayer(name, socket) {
       }
     }, 1000);
   }
-  
-  
 
   startPreparing() {
     this.RoomState = "preparing";
-    
+
     if (this.timeInt) return;
-    
+
     this.timeInt = setInterval(() => {
       this.counter--;
       this.broadcast("preparing", { counter: this.counter });
@@ -76,58 +88,56 @@ addPlayer(name, socket) {
         clearInterval(this.timeInt);
         this.timeInt = null;
         console.log("Preparing finished");
-        this.startGame()
+        this.startGame();
       }
     }, 1000);
   }
 
   startGame() {
-
     if (this.RoomState == "started") {
-      return
+      return;
     }
-    
+
     this.RoomState = "started";
-    this.broadcast("Start", null)    
+    this.broadcast("Start", null);
 
     this.map = new GameMap(13, 15, 40);
     this.map.generateMap();
-    
+
     const startPositions = [
       { x: 1, y: 1 },
       { x: this.map.columns - 2, y: 1 },
       { x: 1, y: this.map.rows - 2 },
-      { x: this.map.columns - 2, y: this.map.rows - 2 }
+      { x: this.map.columns - 2, y: this.map.rows - 2 },
     ];
-    
+
     let i = 0;
     for (const player of Object.values(this.players)) {
       const pos = startPositions[i];
       player.resetPosition(pos.x, pos.y);
-      
+
       if (!player.avatar) {
         const avatarList = ["bilal.png", "l9r3.png", "lbnita.png", "ndadr.png"];
-        player.avatar = avatarList[Math.floor(Math.random() * avatarList.length)];
+        player.avatar =
+          avatarList[Math.floor(Math.random() * avatarList.length)];
       }
       i++;
     }
-    
+
     const publicPlayersData = {};
     for (const player of Object.values(this.players)) {
       publicPlayersData[player.name] = {
         x: player.position.x,
         y: player.position.y,
-        avatar: player.avatar
+        avatar: player.avatar,
       };
     }
-    
-    
+
     this.broadcast("gameStart", {
       map: this.map.tiles,
-      players: publicPlayersData
+      players: publicPlayersData,
     });
-    
-    
+
     for (const player of Object.values(this.players)) {
       player.socket.emit("playerData", {
         name: player.name,
@@ -138,21 +148,20 @@ addPlayer(name, socket) {
         avatar: player.avatar,
         position: {
           x: player.position.x,
-          y: player.position.y
+          y: player.position.y,
         },
         pixelPosition: {
           x: player.pixelPosition.x,
-          y: player.pixelPosition.y
-        }
+          y: player.pixelPosition.y,
+        },
       });
     }
 
     setInterval(() => {
       this.update();
     }, 1000 / 60);
-    
   }
-  
+
   removePlayer(name) {
     delete this.players[name];
     if (Object.keys(this.players).length === 0) {
@@ -163,12 +172,11 @@ addPlayer(name, socket) {
   setPlayerDirection(name, direction) {
     const player = this.players[name];
     if (!player || !player.isAlive()) return;
-    
+
     player.movingDirection = direction;
   }
-  
-  update() {
 
+  update() {
     let anyPlayerMoved = false;
     for (const player of Object.values(this.players)) {
       if (player.movingDirection) {
@@ -185,18 +193,18 @@ addPlayer(name, socket) {
           case "left":
             dx -= player.speed;
             break;
-            case "right":
-              dx += player.speed;
-              break;
+          case "right":
+            dx += player.speed;
+            break;
         }
-        
+
         const moved = this.movePlayerPixel(player.name, dx, dy);
         if (moved) {
           anyPlayerMoved = true;
         }
       }
     }
-    
+
     if (anyPlayerMoved) {
       const playersPositions = {};
       for (const p of Object.values(this.players)) {
@@ -205,10 +213,10 @@ addPlayer(name, socket) {
           pixelY: p.pixelPosition.y,
           tileX: p.position.x,
           tileY: p.position.y,
-          avatar: p.avatar
+          avatar: p.avatar,
         };
       }
-      
+
       this.broadcast("updatePlayers", { playersPositions });
     }
   }
@@ -220,10 +228,10 @@ addPlayer(name, socket) {
     const TILE_SIZE = 40;
     const oldX = player.pixelPosition.x;
     const oldY = player.pixelPosition.y;
-    
+
     const centerX = player.position.x * TILE_SIZE + TILE_SIZE / 2;
     const centerY = player.position.y * TILE_SIZE + TILE_SIZE / 2;
-    
+
     const playerCenterX = player.pixelPosition.x + TILE_SIZE / 2;
     const playerCenterY = player.pixelPosition.y + TILE_SIZE / 2;
 
@@ -233,13 +241,16 @@ addPlayer(name, socket) {
     if (player.lastAxis && newAxis && player.lastAxis !== newAxis) {
       isChangingAxis = true;
     }
-    
+
     if (isChangingAxis) {
       const CENTER_THRESHOLD = TILE_SIZE * 0.4;
       const distFromCenterX = Math.abs(playerCenterX - centerX);
       const distFromCenterY = Math.abs(playerCenterY - centerY);
-      
-      if (distFromCenterX > CENTER_THRESHOLD || distFromCenterY > CENTER_THRESHOLD) {
+
+      if (
+        distFromCenterX > CENTER_THRESHOLD ||
+        distFromCenterY > CENTER_THRESHOLD
+      ) {
         return false;
       } else {
         player.pixelPosition.x = centerX - TILE_SIZE / 2;
@@ -250,10 +261,10 @@ addPlayer(name, socket) {
         return true;
       }
     }
-    
+
     let newX = player.pixelPosition.x;
     let newY = player.pixelPosition.y;
-    
+
     if (dx !== 0) {
       if (dx > 0) {
         const rightEdge = player.pixelPosition.x + TILE_SIZE + dx;
@@ -311,7 +322,7 @@ addPlayer(name, socket) {
 
     const newTileX = Math.floor((newX + TILE_SIZE / 2) / TILE_SIZE);
     const newTileY = Math.floor((newY + TILE_SIZE / 2) / TILE_SIZE);
-    
+
     player.pixelPosition.x = newX;
     player.pixelPosition.y = newY;
 
@@ -323,7 +334,7 @@ addPlayer(name, socket) {
     const powerUpIndex = this.powerUps.findIndex(
       (p) => p.x === player.position.x && p.y === player.position.y
     );
-    
+
     if (powerUpIndex !== -1) {
       const powerUp = this.powerUps[powerUpIndex];
       this.pickupPowerUp(name, powerUp.x, powerUp.y);
@@ -336,9 +347,9 @@ addPlayer(name, socket) {
       return false;
     }
   }
-  
+
   pickupPowerUp(name, x, y) {
-    const powerUpIndex = this.powerUps.findIndex(p => p.x === x && p.y === y);
+    const powerUpIndex = this.powerUps.findIndex((p) => p.x === x && p.y === y);
     if (powerUpIndex === -1) {
       console.log(`No power-up at ${x},${y}`);
       return;
@@ -351,24 +362,22 @@ addPlayer(name, socket) {
     const updatedValue = player.addPowerUp(powerUp.type);
     this.powerUps.splice(powerUpIndex, 1);
 
-    this.broadcast('powerUpPicked', {
+    this.broadcast("powerUpPicked", {
       name,
       type: powerUp.type,
       x,
       y,
-      newValue: updatedValue
-    })
+      newValue: updatedValue,
+    });
 
     console.log(`${name} picked up ${powerUp.type}`);
   }
 
-
-
   explodeBomb(bomb) {
     console.log(`Bomb at ${bomb.x},${bomb.y} exploding`);
     let mapChanged = false;
-    this.bombs = this.bombs.filter(b => b !== bomb);
-    
+    this.bombs = this.bombs.filter((b) => b !== bomb);
+
     const blastTiles = [];
     const destroyedBlocks = []; // ← New array to store destroyed blocks
 
@@ -378,17 +387,19 @@ addPlayer(name, socket) {
       { dx: -1, dy: 0 },
       { dx: 1, dy: 0 },
       { dx: 0, dy: -1 },
-      { dx: 0, dy: 1 }
+      { dx: 0, dy: 1 },
     ];
 
     for (const dir of directions) {
       for (let i = 1; i <= bomb.range; i++) {
         const checkX = bomb.x + dir.dx * i;
         const checkY = bomb.y + dir.dy * i;
-        
+
         if (
-          checkX < 0 || checkX >= this.map.columns ||
-          checkY < 0 || checkY >= this.map.rows
+          checkX < 0 ||
+          checkX >= this.map.columns ||
+          checkY < 0 ||
+          checkY >= this.map.rows
         ) {
           break;
         }
@@ -400,7 +411,7 @@ addPlayer(name, socket) {
         if (tile === this.map.TILE_WALL) {
           break;
         }
-        
+
         blastTiles.push({ x: checkX, y: checkY });
 
         if (tile === this.map.TILE_BLOCK) {
@@ -413,13 +424,13 @@ addPlayer(name, socket) {
             this.powerUps.push({
               x: checkX,
               y: checkY,
-              type
+              type,
             });
 
             this.broadcast("powerUpSpawned", {
               x: checkX,
               y: checkY,
-              type
+              type,
             });
           }
           break;
@@ -431,29 +442,30 @@ addPlayer(name, socket) {
       for (const t of blastTiles) {
         if (player.position.x === t.x && player.position.y === t.y) {
           const alive = player.loseLife();
-          console.log(`${player.name} hit by explosion! Lives left: ${player.lives}`);
+          console.log(
+            `${player.name} hit by explosion! Lives left: ${player.lives}`
+          );
           if (!alive) {
             this.broadcast("playerDied", {
-              name: player.name
+              name: player.name,
             });
           }
         }
       }
     }
-    
+
     this.broadcast("bombExploded", {
       bomb: { x: bomb.x, y: bomb.y, owner: bomb.owner },
       blastTiles,
-      destroyedBlocks // ← send list of destroyed blocks
+      destroyedBlocks, // ← send list of destroyed blocks
     });
 
     if (mapChanged) {
       this.broadcast("mapChange", {
-        map: this.map.tiles
+        map: this.map.tiles,
       });
     }
   }
-
 
   hasPlayer(name) {
     return this.players.hasOwnProperty(name);
@@ -461,47 +473,41 @@ addPlayer(name, socket) {
   placeBomb(name) {
     const player = this.players[name];
     if (!player || !player.isAlive()) return;
-    
+
     const { x, y } = player.position;
 
-    const bombsByPlayer = this.bombs.filter(b => b.owner === name);
+    const bombsByPlayer = this.bombs.filter((b) => b.owner === name);
     if (bombsByPlayer.length >= player.maxBombs) {
       console.log(`${name} has no bombs left`);
       return;
     }
-    
+
     const bomb = {
       x,
       y,
       owner: name,
-      range: player.explosionRange
+      range: player.explosionRange,
     };
     this.bombs.push(bomb);
-    
+
     this.broadcast("bombPlaced", {
       x,
       y,
-      owner: name
+      owner: name,
     });
-    
+
     setTimeout(() => {
       this.explodeBomb(bomb);
     }, 2000);
   }
-  
-  
+
   broadcast(event, data) {
     for (const player of Object.values(this.players)) {
-       
       if (!player.socket) {
         console.log(`Invalid socket for ${player.name}, skipping...`);
-        continue
-
+        continue;
       }
-
-      player.socket.emit(event, data);      
+      player.socket.emit(event, data);
     }
   }
-
-  
 }

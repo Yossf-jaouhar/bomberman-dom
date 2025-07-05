@@ -2,7 +2,7 @@ import { E } from "../frameWork/DOM.js";
 import Myapp from "../helper/appInstance.js";
 import { getSocket, isSocketConnected } from "../ws/wsHandler.js";
 import chat from "./chat.js";
-let listeningOn = false
+let listeningOn = false;
 export default function Lobby() {
   if (!isSocketConnected()) {
     Myapp.navigate("/");
@@ -16,67 +16,30 @@ export default function Lobby() {
 
   let intervalId = null;
 
-  function startCountdown(startValue) {
-    setCounter(startValue);
-    let currentValue = startValue;
-
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
-
-    intervalId = setInterval(() => {
-      currentValue -= 1;
-      if (currentValue > 0) {
-        setCounter(currentValue);
-      } else {
-        setCounter(0);
-        clearInterval(intervalId);
-        intervalId = null;
-      }
-    }, 1000);
-  }
-
   if (!listeningOn) {
     socket.on("joined", (data) => {
-      console.log('waiting ', data);
-      setNoOfPlayers(data.nofPlayers);
       setCounter(data.Counter);
+      setNoOfPlayers(data.nofplayers);
+
       setRoomState(data.RoomState);
-      if (data.Counter != null) {
-        startCountdown(data.Counter);
-      }
     });
 
     socket.on("waiting", (data) => {
+      console.log("lfarsi ----", data.nofplayers);
       setRoomState("waiting");
       setCounter(data.Counter);
-      if (data.Counter != null) {
-        startCountdown(data.Counter);
-      }
     });
 
     socket.on("preparing", (data) => {
       setRoomState("preparing");
       setCounter(data.counter);
-      if (data.counter != null) {
-        startCountdown(data.counter);
-      }
     });
 
-    socket.on("playerJoined", (data) => {
-      console.log("New player joined:", data.name);
-      console.log("All players now:", data.players);
+    socket.on("playerJoined", (data) => {});
 
-      setNoOfPlayers(data.players);
+    socket.on("Start", (data) => {
+      Myapp.navigate("/game");
     });
-
-
-
-
-    socket.on("Start", (data) => { Myapp.navigate("/game") });
-
-
-
 
     return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
       E("div", { class: "LobbyState df center gp24" }).childs(
@@ -85,9 +48,7 @@ export default function Lobby() {
           E("p", {}).childs(`players`)
         ),
         E("div", { class: "df fc gp8 center" }).childs(
-          counter() != null
-            ? E("h1", {}).childs(`${counter()} s`)
-            : "",
+          counter() != null ? E("h1", {}).childs(`${counter()} s`) : "",
           E("p", {}).childs(`${roomState()}`)
         )
       ),

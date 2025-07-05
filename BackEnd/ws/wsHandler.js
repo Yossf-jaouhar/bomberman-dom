@@ -25,15 +25,7 @@ export function setupSocketIO(server) {
       room.mutex = new Mutex();
     }
 
-
-  
-
-    room.broadcast("joined", {
-      RoomState: room.RoomState,
-      nofPlayers: Object.keys(room.players).length,
-      Counter: room.Counter,
-    });
-
+   
     room.broadcast("MessageHistory", {
       Messages: room.chatMessages,
     });

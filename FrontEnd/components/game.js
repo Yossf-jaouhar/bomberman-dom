@@ -35,13 +35,6 @@ export default function Game() {
   const [maxBombs, setMaxBoms] = Myapp.useState(3);
   const [explosionRange, setExplosionRange] = Myapp.useState(4);
   const [powerUps, setPowerUps] = Myapp.useState([]);
-  console.log("inside powerups ", powerUps());
-
-
-
-
-
-
 
   registerWSListeners()
   usePlayerMovement();

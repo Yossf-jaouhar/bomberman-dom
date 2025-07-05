@@ -7,26 +7,27 @@ export class Game {
   }
 
   createRoom() {
-    const roomId = this.roomCounter++;
+    const roomId = this.roomCounter;
     this.rooms[roomId] = new Room(this);
     console.log(`Created room with id ${roomId}. Total rooms: ${Object.keys(this.rooms).length}`);
     return this.rooms[roomId];
   }
 
   join(playerName, socket) {
+
     for (const id in this.rooms) {
       const room = this.rooms[id];
-      console.log(`Room ${id} players:`, Object.keys(room.players));
-
-      if (!room.hasPlayer(playerName) && Object.keys(room.players).length < 4) {
-        room.addPlayer(playerName, socket);
-        console.log(`Added player ${playerName} to room ${id}`);
-        return room;
+      
+      if ( Object.keys(room.players).length < 4) {
+        if  (!room.hasPlayer(playerName)) {
+          room.addPlayer(playerName, socket);
+          return room;
+        }
       }
     }
-
+    const newRoomId = this.roomCounter++;
     const newRoom = this.createRoom();
-    const newRoomId = this.roomCounter - 1;
+    this.rooms[newRoomId] = newRoom;
     console.log(`Created new room ${newRoomId} and adding player ${playerName}`);
     newRoom.addPlayer(playerName, socket);
     return newRoom;
