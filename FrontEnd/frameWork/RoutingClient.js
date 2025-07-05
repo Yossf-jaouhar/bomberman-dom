@@ -25,7 +25,6 @@ export default class App {
   }
 
    navigate(path) {
-    if (window.location.pathname === path) return; 
     this.hookStates = [];
     this.hookIndex = 0;
     history.pushState({}, "", path);

@@ -3,6 +3,7 @@ import Myapp from "../helper/appInstance.js";
 import { getSocket, isSocketConnected } from "../ws/wsHandler.js";
 import chat from "./chat.js";
 let listeningOn = false;
+let isStart = false
 export default function Lobby() {
   if (!isSocketConnected()) {
     Myapp.navigate("/");
@@ -31,9 +32,12 @@ export default function Lobby() {
 
     socket.on("playerJoined", (data) => {});
 
-    socket.on("Start", () => {
-      Myapp.navigate("/game");
-    });
+    if (!isStart) {
+      socket.on("Start", () => {
+        Myapp.navigate("/game");
+      });
+      isStart = true
+    }
 
     return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
       E("div", { class: "LobbyState df center gp24" }).childs(
