@@ -5,7 +5,7 @@ import { Mutex } from "./mutex.js";
 export function setupSocketIO(server) {
   const io = new Server(server);
 
-  io.on("connection", async (socket) => {
+  io.on("connection", (socket) => {
     // Join the game
     const name = (socket.handshake.query.name || "").trim()
     if (!name) {
@@ -76,23 +76,15 @@ export function setupSocketIO(server) {
 
 
 
-    socket.on("startMoving", async (data) => {
-      const unlock = await room.mutex.lock();
-      try {
+    socket.on("startMoving",  (data) => {
+      
         room.setPlayerDirection(name, data.direction);
-      } finally {
-        unlock()
-      }
     });
 
 
-    socket.on("stopMoving", async () => {
-      const unlock = await room.mutex.lock();
-      try {
+    socket.on("stopMoving",  () => {
         room.setPlayerDirection(name, null);
-      } finally {
-        unlock()
-      }
+      
     });
 
     socket.on("move", async (data) => {

@@ -63,10 +63,18 @@ export default function Lobby() {
       }
     });
 
+    socket.on("playerJoined", (data) => {
+      console.log("New player joined:", data.name);
+      console.log("All players now:", data.players);
+
+      setNoOfPlayers(data.players);
+    });
 
 
-    socket.on("Start", (data) => {Myapp.navigate("/game")});
-      
+
+
+    socket.on("Start", (data) => { Myapp.navigate("/game") });
+
 
 
 

@@ -37,14 +37,14 @@ export default function Game() {
   const [powerUps, setPowerUps] = Myapp.useState([]);
   console.log("inside powerups ", powerUps());
 
-  usePlayerMovement();
+
 
 
 
 
 
   registerWSListeners()
-
+  usePlayerMovement();
   function gameRenderLoop() {
     if (pendingState.bombsPlaced.length > 0) {
       setBombs((prev) => [
@@ -243,7 +243,11 @@ export default function Game() {
 
 
   function applyUpdatePlayers(data) {
-    setPlayers((prevPlayers = []) => {
+    setPlayers((prevPlayers) => {
+      if (!Array.isArray(prevPlayers)) {
+        prevPlayers = [];
+      }
+
       const updatedPlayers = [];
 
       const incomingNames = Object.keys(data.playersPositions);
@@ -291,17 +295,22 @@ export default function Game() {
 
 
   function applyPlayerDied(data) {
-    setPlayers((prevPlayers) =>
-      prevPlayers.filter((p) => p.name !== data.name)
-    );
+    setPlayers((prevPlayers) => {
+      if (!Array.isArray(prevPlayers)) {
+        prevPlayers = [];
+      }
+      return prevPlayers.filter((p) => p.name !== data.name);
+    });
+
     if (data.name === playerName()) {
       setGameOver(true);
     }
 
-    if (players().length === 1) {
+    if ((players() || []).length === 1) {
       setGameWin(true);
     }
   }
+
 
 
 

@@ -17,23 +17,30 @@ export class Room {
     this.bombs = [];
     this.powerUps = [];
   }
+addPlayer(name, socket) {
+  console.log("hhhh", name);
+  
+  const player = new Player(name, socket);
+  this.players[name] = player;
 
-  addPlayer(name, socket) {
-    const player = new Player(name, socket);
-    this.players[name] = player;
+  const playerCount = Object.keys(this.players).length;
 
-    const playerCount = Object.keys(this.players).length;
+  this.broadcast("playerJoined", {
+    name,
+    players: Object.keys(this.players),  
+  });
 
-    if (playerCount === 1) {
-      this.RoomState = "solo";
-    }
-    if (playerCount > 1) {
-      this.startWaiting();
-    }
-    if (playerCount === 4) {
-      this.startPreparing();
-    }
+  if (playerCount === 1) {
+    this.RoomState = "solo";
   }
+  if (playerCount > 1) {
+    this.startWaiting();
+  }
+  if (playerCount === 4) {
+    this.startPreparing();
+  }
+}
+
 
 
   startWaiting() {
@@ -496,10 +503,7 @@ export class Room {
 
       }
 
-      player.socket.emit(event, data);
-
-      console.log("kkkkk", event ,data);
-      
+      player.socket.emit(event, data);      
     }
   }
 
