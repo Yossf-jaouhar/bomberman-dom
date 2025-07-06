@@ -1,6 +1,6 @@
 import { GameMap } from "./map.js";
 import { Player } from "./player.js";
-
+import {fisherYatesShuffle} from "./../utility/helpres.js"
 
 const POWERUPS = ["Bomb", "Flame", "Speed"];
 
@@ -22,9 +22,9 @@ export class Room {
 
     const player = new Player(name, socket);
     this.players[name] = player;
-    
+
     const playerCount = Object.keys(this.players).length;
-    
+
     this.broadcast("playerJoined", {
       name,
       players: Object.keys(this.players),
@@ -41,9 +41,9 @@ export class Room {
     }
   }
 
-  startWaiting  () {
-    
-    if (this.RoomState =="waiting") return
+  startWaiting() {
+
+    if (this.RoomState == "waiting") return
     this.RoomState = "waiting";
 
     if (this.timeIntw) return;
@@ -52,11 +52,11 @@ export class Room {
       const nofplayers = Object.keys(this.players).length;
       this.Counter--;
       if (this.RoomState === "preparing") {
-         clearInterval(this.timeIntw);
+        clearInterval(this.timeIntw);
         this.timeIntw = null;
         console.log("waiting finished!");
       }
-      this.broadcast("waiting", { Counter: this.Counter , nofplayers});
+      this.broadcast("waiting", { Counter: this.Counter, nofplayers });
       if (this.Counter <= 0) {
         clearInterval(this.timeIntw);
         this.timeIntw = null;
@@ -67,16 +67,16 @@ export class Room {
   }
 
   startPreparing() {
-    if (this.RoomState =="preparing") return
+    if (this.RoomState == "preparing") return
     this.RoomState = "preparing";
-    
+
     if (this.timeIntp) return;
 
     this.timeIntp = setInterval(() => {
       const nofplayers = Object.keys(this.players).length;
 
       this.counter--;
-      this.broadcast("preparing", { counter: this.counter , nofplayers });
+      this.broadcast("preparing", { counter: this.counter, nofplayers });
 
       if (this.counter <= 0) {
         clearInterval(this.timeIntp);
@@ -101,15 +101,23 @@ export class Room {
       { x: this.map.columns - 2, y: this.map.rows - 2 },
     ];
 
+    const avatarList = ["bilal.png", "l9r3.png", "lbnita.png", "ndadr.png"];
+    const shuffledAvatars = fisherYatesShuffle(avatarList);
+
+
     let i = 0;
     for (const player of Object.values(this.players)) {
       const pos = startPositions[i];
       player.resetPosition(pos.x, pos.y);
 
       if (!player.avatar) {
-        const avatarList = ["bilal.png", "l9r3.png", "lbnita.png", "ndadr.png"];
-        player.avatar =
-          avatarList[Math.floor(Math.random() * avatarList.length)];
+
+        if (i < shuffledAvatars.length) {
+          player.avatar = shuffledAvatars[i];
+        } else {
+          console.warn("More players than avatars (may repeat)");
+          player.avatar = avatarList[Math.floor(Math.random() * avatarList.length)];
+        }
       }
       i++;
     }
@@ -341,7 +349,6 @@ export class Room {
   pickupPowerUp(name, x, y) {
     const powerUpIndex = this.powerUps.findIndex((p) => p.x === x && p.y === y);
     if (powerUpIndex === -1) {
-      console.log(`No power-up at ${x},${y}`);
       return;
     }
 
@@ -359,12 +366,9 @@ export class Room {
       y,
       newValue: updatedValue,
     });
-
-    console.log(`${name} picked up ${powerUp.type}`);
   }
 
   explodeBomb(bomb) {
-    console.log(`Bomb at ${bomb.x},${bomb.y} exploding`);
     let mapChanged = false;
     this.bombs = this.bombs.filter((b) => b !== bomb);
 
@@ -432,9 +436,6 @@ export class Room {
       for (const t of blastTiles) {
         if (player.position.x === t.x && player.position.y === t.y) {
           const alive = player.loseLife();
-          console.log(
-            `${player.name} hit by explosion! Lives left: ${player.lives}`
-          );
           if (!alive) {
             this.broadcast("playerDied", {
               name: player.name,
@@ -468,7 +469,6 @@ export class Room {
 
     const bombsByPlayer = this.bombs.filter((b) => b.owner === name);
     if (bombsByPlayer.length >= player.maxBombs) {
-      console.log(`${name} has no bombs left`);
       return;
     }
 
@@ -494,7 +494,6 @@ export class Room {
   broadcast(event, data) {
     for (const player of Object.values(this.players)) {
       if (!player.socket) {
-        console.log(`Invalid socket for ${player.name}, skipping...`);
         continue;
       }
       player.socket.emit(event, data);
