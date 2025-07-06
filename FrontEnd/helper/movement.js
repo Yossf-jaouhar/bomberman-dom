@@ -16,6 +16,7 @@ const keyToDirection = {
 
 function handleKeyDown(e) {
   const socket = getSocket();
+  if (!socket) return;
   const direction = keyToDirection[e.key];
 
   if (direction) {
@@ -33,6 +34,8 @@ function handleKeyDown(e) {
 
 function handleKeyUp(e) {
   const socket = getSocket();
+  if (!socket) return;
+
   const direction = keyToDirection[e.key];
 
   if (direction) {
@@ -58,7 +61,7 @@ export default function usePlayerMovement() {
   }
 }
 
-export function cleanupPlayerMovement() {
+export  function cleanupPlayerMovement() {
   window.removeEventListener("keydown", handleKeyDown);
   window.removeEventListener("keyup", handleKeyUp);
   listenersInitialized = false;

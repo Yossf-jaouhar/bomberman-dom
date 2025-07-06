@@ -236,6 +236,11 @@ export default function Game() {
 
 
   function applyUpdatePlayers(data) {
+
+    if ((players() || []).length === 1) {
+      setGameWin(true);
+    }
+
     setPlayers((prevPlayers) => {
       if (!Array.isArray(prevPlayers)) {
         prevPlayers = [];
@@ -299,9 +304,6 @@ export default function Game() {
       setGameOver(true);
     }
 
-    if ((players() || []).length === 1) {
-      setGameWin(true);
-    }
   }
 
 

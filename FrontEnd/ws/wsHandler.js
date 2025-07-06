@@ -36,5 +36,10 @@ export function isSocketConnected() {
   return !!(socket && socket.connected);
 }
 export function getSocket() {
+  let help = false
+  if ( !socket && !help ) {
+    location.reload()
+    help = true
+  }
   return socket;
 }

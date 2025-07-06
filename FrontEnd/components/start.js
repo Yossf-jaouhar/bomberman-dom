@@ -1,9 +1,9 @@
 import { E } from "../frameWork/DOM.js";
 import { connectWebSocket, isSocketConnected } from "../ws/wsHandler.js";
 import Myapp from "../helper/appInstance.js";
+import { getSocket } from "../ws/wsHandler.js";
 
 export default function Start() {
-
   if (isSocketConnected()) {
     console.log("connected already !  redirecting ...");
     Myapp.navigate("/lobby")
