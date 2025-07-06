@@ -15,6 +15,7 @@ export default function Chat() {
         socket.on("chatMessage", (data) => {
             setChatMessages((prev) => [...prev, data]);
         });
+        isOn = true
     }
     function sendMessage(value) {
         if (!value.trim()) return;

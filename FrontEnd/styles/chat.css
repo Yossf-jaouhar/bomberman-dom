@@ -6,10 +6,27 @@
     height: 80%;
     align-self: stretch;
     min-width: 360px;
+
     justify-content: center;
     align-items: center;
     padding: 40px;
 }
+
+.chat-messages {
+    max-height: 300px;
+    overflow-y: scroll;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+}
+
+
 
 .chat-input {
     background: transparent;
@@ -37,13 +54,15 @@ button {
     color: white;
     font-size: 14px;
     font-weight: bold;
-    padding: 8px  16px 8px 16px;
+    padding: 8px 16px 8px 16px;
 }
+
 .chatContainer {
     flex-grow: 1;
 }
+
 .openClose {
-  background-color: #ffffff33;
-  padding: 8px;
-  min-width: 360px;
+    background-color: #ffffff33;
+    padding: 8px;
+    min-width: 360px;
 }
