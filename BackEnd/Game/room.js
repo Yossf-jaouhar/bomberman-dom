@@ -1,6 +1,6 @@
 import { GameMap } from "./map.js";
 import { Player } from "./player.js";
-import {fisherYatesShuffle} from "./../utility/helpres.js"
+import { fisherYatesShuffle } from "./../utility/helpres.js";
 
 const POWERUPS = ["Bomb", "Flame", "Speed"];
 
@@ -19,7 +19,6 @@ export class Room {
     this.powerUps = [];
   }
   addPlayer(name, socket) {
-
     const player = new Player(name, socket);
     this.players[name] = player;
 
@@ -42,8 +41,7 @@ export class Room {
   }
 
   startWaiting() {
-
-    if (this.RoomState == "waiting") return
+    if (this.RoomState == "waiting") return;
     this.RoomState = "waiting";
 
     if (this.timeIntw) return;
@@ -67,7 +65,7 @@ export class Room {
   }
 
   startPreparing() {
-    if (this.RoomState == "preparing") return
+    if (this.RoomState == "preparing") return;
     this.RoomState = "preparing";
 
     if (this.timeIntp) return;
@@ -104,19 +102,18 @@ export class Room {
     const avatarList = ["bilal.png", "l9r3.png", "lbnita.png", "ndadr.png"];
     const shuffledAvatars = fisherYatesShuffle(avatarList);
 
-
     let i = 0;
     for (const player of Object.values(this.players)) {
       const pos = startPositions[i];
       player.resetPosition(pos.x, pos.y);
 
       if (!player.avatar) {
-
         if (i < shuffledAvatars.length) {
           player.avatar = shuffledAvatars[i];
         } else {
           console.warn("More players than avatars (may repeat)");
-          player.avatar = avatarList[Math.floor(Math.random() * avatarList.length)];
+          player.avatar =
+            avatarList[Math.floor(Math.random() * avatarList.length)];
         }
       }
       i++;
@@ -348,9 +345,7 @@ export class Room {
 
   pickupPowerUp(name, x, y) {
     const powerUpIndex = this.powerUps.findIndex((p) => p.x === x && p.y === y);
-    if (powerUpIndex === -1) {
-      return;
-    }
+    if (powerUpIndex === -1) return;
 
     const powerUp = this.powerUps[powerUpIndex];
     const player = this.players[name];
@@ -359,10 +354,17 @@ export class Room {
     const updatedValue = player.addPowerUp(powerUp.type);
     this.powerUps.splice(powerUpIndex, 1);
 
+    console.log("-->", powerUp.type , updatedValue );
     
-    this.broadcast("powerUpPicked", {
+    player.socket.emit("powerUpPicked", {
       name,
       type: powerUp.type,
+      x,
+      y,
+      newValue: updatedValue,  
+    });
+
+    this.broadcast("removePowerUp", {
       x,
       y,
     });

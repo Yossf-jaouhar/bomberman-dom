@@ -4,23 +4,23 @@ import { connectWebSocket, getSocket } from "../ws/wsHandler.js";
 import PlayerDivs from "./player.js";
 import MapTiles from "./mapTiles.js";
 import GameHeader from "./header.js";
-import usePlayerMovement, { cleanupPlayerMovement } from "../helper/movement.js";
+import usePlayerMovement, {
+  cleanupPlayerMovement,
+} from "../helper/movement.js";
 import BombDivs from "./bom.js";
 import registerWSListeners from "../ws/wsListeners.js";
 import { pendingState } from "../helper/wsData.js";
 
-
 export default function Game() {
   let socket = getSocket();
   if (!socket) {
-    Myapp.navigate("/")
-    return
+    Myapp.navigate("/");
+    return;
   }
 
   const rows = 13;
   const cols = 15;
   const tileSize = 40;
-
 
   const [mapTiles, setMapTiles] = Myapp.useState([]);
   const [players, setPlayers] = Myapp.useState([]);
@@ -31,12 +31,12 @@ export default function Game() {
   const [gameWin, setGameWin] = Myapp.useState(false);
   const [bombs, setBombs] = Myapp.useState([]);
   const [explosions, setExplosions] = Myapp.useState([]);
-  const [speed, setSpeed] = Myapp.useState(0);
-  const [maxBombs, setMaxBoms] = Myapp.useState(0);
-  const [explosionRange, setExplosionRange] = Myapp.useState(0);
+  const [speed, setSpeed] = Myapp.useState(3);
+  const [maxBombs, setMaxBoms] = Myapp.useState(3);
+  const [explosionRange, setExplosionRange] = Myapp.useState(3);
   const [powerUps, setPowerUps] = Myapp.useState([]);
 
-  registerWSListeners()
+  registerWSListeners();
   usePlayerMovement();
   function gameRenderLoop() {
     if (pendingState.bombsPlaced.length > 0) {
@@ -67,12 +67,12 @@ export default function Game() {
         const destroyed = data.destroyedBlocks.map((block) => ({
           x: block.x,
           y: block.y,
-          owner: bomb.owner
+          owner: bomb.owner,
         }));
         return [
           ...prev,
           { x: bomb.x, y: bomb.y, owner: bomb.owner },
-          ...destroyed
+          ...destroyed,
         ];
       });
 
@@ -81,17 +81,12 @@ export default function Game() {
         setExplosions((prev) =>
           prev.filter(
             (e) =>
-              !(
-                e.x === bomb.x &&
-                e.y === bomb.y &&
-                e.owner === bomb.owner
-              ) &&
+              !(e.x === bomb.x && e.y === bomb.y && e.owner === bomb.owner) &&
               !data.destroyedBlocks.some((dt) => dt.x === e.x && dt.y === e.y)
           )
         );
       }, 100);
     }
-
 
     if (pendingState.explosionsFullUpdate) {
       setExplosions(pendingState.explosionsFullUpdate.explosions);
@@ -103,30 +98,25 @@ export default function Game() {
       pendingState.gameStart = null;
     }
 
-
     if (pendingState.playerData) {
       applyPlayerData(pendingState.playerData);
       pendingState.playerData = null;
     }
-
 
     if (pendingState.updatePlayers) {
       applyUpdatePlayers(pendingState.updatePlayers);
       pendingState.updatePlayers = null;
     }
 
-
     if (pendingState.mapChange) {
       setMapTiles(pendingState.mapChange.map);
       pendingState.mapChange = null;
     }
 
-
     if (pendingState.lifeUpdate) {
       setPlayerLives(pendingState.lifeUpdate.lives);
       pendingState.lifeUpdate = null;
     }
-
 
     if (pendingState.playerDied) {
       applyPlayerDied(pendingState.playerDied);
@@ -140,11 +130,9 @@ export default function Game() {
     }
 
     if (pendingState.powerUpPicked) {
-      const { x, y, type, newValue } = pendingState.powerUpPicked;
+      const {newValue, x, y, type} = pendingState.powerUpPicked;
 
-      setPowerUps((prev) =>
-        prev.filter((p) => !(p.x === x && p.y === y))
-      );
+      setPowerUps((prev) => prev.filter((p) => !(p.x === x && p.y === y)));
 
       switch (type) {
         case "Speed":
@@ -167,19 +155,16 @@ export default function Game() {
       pendingState.powerUpPicked = null;
     }
 
-
-
-
+    if (pendingState.removePowerUp) {
+      const { x, y } = pendingState.removePowerUp;
+      setPowerUps((prev) => prev.filter((p) => !(p.x === x && p.y === y)));
+      pendingState.removePowerUp = null;
+    }
 
     requestAnimationFrame(gameRenderLoop);
   }
 
-
   requestAnimationFrame(gameRenderLoop);
-
-
-
-
 
   function PowerUpDivs(powerUps, tileSize) {
     return powerUps.map((p, index) =>
@@ -194,8 +179,6 @@ export default function Game() {
     );
   }
 
-
-
   function applyGameStart(data) {
     setMapTiles(data.map);
 
@@ -208,18 +191,15 @@ export default function Game() {
       avatar: info.avatar?.replace(".png", "") || "",
     }));
 
-
     setPlayers(playersArray);
   }
 
-
   function applyPlayerData(data) {
-
     setPlayerName(data.name);
     setPlayerLives(data.lives);
-    setSpeed(data.speed)
-    setMaxBoms(data.maxBombs)
-    setExplosionRange(data.explosionRange)
+    setSpeed(data.speed);
+    setMaxBoms(data.maxBombs);
+    setExplosionRange(data.explosionRange);
     setCurrentPlayer({
       name: data.name,
       lives: data.lives,
@@ -234,9 +214,7 @@ export default function Game() {
     });
   }
 
-
   function applyUpdatePlayers(data) {
-
     if ((players() || []).length === 1) {
       setGameWin(true);
     }
@@ -250,7 +228,7 @@ export default function Game() {
 
       const incomingNames = Object.keys(data.playersPositions);
 
-      const playerMap = new Map(prevPlayers.map(p => [p.name, p]));
+      const playerMap = new Map(prevPlayers.map((p) => [p.name, p]));
 
       for (const name of incomingNames) {
         const pos = data.playersPositions[name];
@@ -290,8 +268,6 @@ export default function Game() {
     }
   }
 
-
-
   function applyPlayerDied(data) {
     setPlayers((prevPlayers) => {
       if (!Array.isArray(prevPlayers)) {
@@ -303,12 +279,16 @@ export default function Game() {
     if (data.name === playerName()) {
       setGameOver(true);
     }
-
   }
 
-
   return E("div", { class: "game-screen" }).childs(
-    GameHeader(playerName(), playerLives(), speed(), maxBombs(), explosionRange()),
+    GameHeader(
+      playerName(),
+      playerLives(),
+      speed(),
+      maxBombs(),
+      explosionRange()
+    ),
     E("div", {
       class: "map-grid",
     }).childs(
@@ -319,42 +299,40 @@ export default function Game() {
     ),
     gameOver()
       ? E("div", {
-        class: "game-over-popup",
-      }).childs(
-        "Game Over",
-        E("div", { class: "childtxt" }).childs(
-          "Press any key to return to start"
-        ),
-        E("button", {
-          class: "Mybtn",
-          $click: () => {
-            Myapp.setGlobalState("name", null);
-            cleanupPlayerMovement();
-            socket.close();
-            Myapp.navigate("/");
-
-          },
-        }).childs("restart")
-      ) : null,
+          class: "game-over-popup",
+        }).childs(
+          "Game Over",
+          E("div", { class: "childtxt" }).childs(
+            "Press any key to return to start"
+          ),
+          E("button", {
+            class: "Mybtn",
+            $click: () => {
+              Myapp.setGlobalState("name", null);
+              cleanupPlayerMovement();
+              socket.close();
+              Myapp.navigate("/");
+            },
+          }).childs("restart")
+        )
+      : null,
 
     gameWin()
       ? E("div", {
-        class: "game-over-popup",
-      }).childs(
-        "🎉 You Win! 🎉",
-        E("div", { class: "childtxt" }).childs("Great job, champ!"),
-        E("button", {
-          class: "Mybtn",
-          $click: () => {
-            Myapp.setGlobalState("name", null);
-            cleanupPlayerMovement();
-            socket.close();
-            Myapp.navigate("/");
-          },
-        }).childs("Play Again")
-      )
+          class: "game-over-popup",
+        }).childs(
+          "🎉 You Win! 🎉",
+          E("div", { class: "childtxt" }).childs("Great job, champ!"),
+          E("button", {
+            class: "Mybtn",
+            $click: () => {
+              Myapp.setGlobalState("name", null);
+              cleanupPlayerMovement();
+              socket.close();
+              Myapp.navigate("/");
+            },
+          }).childs("Play Again")
+        )
       : null
   );
-
 }
-
