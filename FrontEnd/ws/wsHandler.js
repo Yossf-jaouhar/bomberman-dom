@@ -27,6 +27,8 @@ export function connectWebSocket(nickname) {
       socket.close();
       socket = null;
       console.log("Socket.IO disconnected");
+      alert("connection lost try again.");
+      location.reload()
     });
   });
 }
