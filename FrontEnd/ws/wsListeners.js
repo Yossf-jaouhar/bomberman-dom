@@ -63,7 +63,4 @@ export default function registerWSListeners() {
   socket.on("powerUpPicked", (data) => {
     pendingState.powerUpPicked = data;
   });
-  // socket.on("close", (data) => {
-  //  Myapp.navigate('/')
-  // });
 }
