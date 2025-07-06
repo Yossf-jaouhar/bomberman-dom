@@ -88,8 +88,6 @@ export function renderV(vnode) {
     if (key.startsWith("$")) {
       el.addEventListener(key.slice(1), value);
     } else if (key === "checked") {
-
-      // console.log("key", key, value);
       el.checked = value;
     } else {
       el.setAttribute(key, value);
@@ -116,17 +114,27 @@ export function MyNewPatch(root, oldN, newN, pos = 0) {
 
   // New node only
   if (!oldN) {
-    console.log("will add");
-    
+
     root.appendChild(renderV(newN));
     return;
   }
 
   // Old node only (remove it)
   if (!newN) {
-    console.log("will delete");
-    if (root.childNodes[pos]) {
-      root.removeChild(root.childNodes[pos]);
+    function findDomChildByKey(parent, key) {
+      return Array.from(parent.childNodes).find(
+        (el) => el?.getAttribute?.("key") === key
+      );
+    }
+    let toRemove;
+    if (oldN?.props?.key !== undefined) {
+      toRemove = findDomChildByKey(root, oldN.props.key);
+    } else {
+      toRemove = root.childNodes[pos];
+    }
+
+    if (toRemove) {
+      root.removeChild(toRemove);
     }
     return;
   }
@@ -186,7 +194,6 @@ export function MyNewPatch(root, oldN, newN, pos = 0) {
 
     const usedIndices = new Set();
     newChildren.forEach((newChild, newIdx) => {
-      // console.log('----0-0----',newChild, newIdx)
       const key = newChild?.props?.key;
       if (key !== undefined && oldKeyMap.has(key)) {
         const [matchedOld, oldIdx] = oldKeyMap.get(key);

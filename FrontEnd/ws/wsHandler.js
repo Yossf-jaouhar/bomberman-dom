@@ -1,26 +1,41 @@
+import Myapp from "../helper/appInstance.js";
 
 let socket;
-
 export function connectWebSocket(nickname) {
-  socket = io("http://localhost:3000", {
-    query: { name: nickname },
-  });
+  
+  return new Promise((resolve, reject) => {
+    socket = io(`http://${window.location.hostname}:3000`, {
+      query: { name: nickname },
+    });
 
-  socket.on("connect", () => {
-    console.log("Socket.IO connected as:", nickname);
-  });
+    socket.on("connect", () => {
+      console.log("Socket.IO connected as:", nickname);
+      resolve(true);
+    });
 
-  socket.on("message", (data) => {
-    console.log("Received:", data);
-  });
+    socket.on("connect_error", (err) => {
+      console.error("Connection failed:", err);
+      resolve(false);
+    });
 
-  socket.on("disconnect", () => {
-    console.log("Socket.IO disconnected");
-  });
+    socket.on("message", (data) => {
+      console.log("Received:", data);
+    });
 
-  return socket;
+    socket.on("disconnect", () => {
+      Myapp.setGlobalState("name", "");
+      socket.close();
+      socket = null;
+      console.log("Socket.IO disconnected");
+      alert("connection lost try again.");
+      location.reload()
+    });
+  });
 }
 
+export function isSocketConnected() {
+  return !!(socket && socket.connected);
+}
 export function getSocket() {
   return socket;
 }

@@ -62,5 +62,59 @@
 .power-up {
   z-index: 100;
   background-size: cover;
-  background-image: url("../images/powerUps.png");
+  width: 24px;
+  height: 24px;
+  position: absolute;
+
+}
+
+.Flame {
+  background-image: url("../images/flameRange.png");
+}
+
+.Speed {
+  background-image: url("../images/speedRapid.png");
+}
+
+.Bomb {
+  background-image: url("../images/maxBomb.png");
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #222;
+  color: #fff;
+  padding: 10px;
+}
+
+.player-powerups {
+  display: flex;
+  gap: 10px;
+}
+
+.powerup-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.powerup-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.powerup-count {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(15, 40px);
+  grid-template-rows: repeat(13, 40px);
+  position: relative;
+  width: calc(15*40px);
+  height: calc(13*40px);
 }

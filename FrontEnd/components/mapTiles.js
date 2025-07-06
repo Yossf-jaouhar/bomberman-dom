@@ -5,6 +5,10 @@ export default function MapTiles(tilesArray, tileSize, cols) {
   const TILE_BLOCK = 1;
   const TILE_EMPTY = 2;
 
+  if (!Array.isArray(tilesArray)) {
+    return []
+  }
+
   return tilesArray.map((tile, i) => {
     let tileClass = "";
     if (tile === TILE_WALL) tileClass = "wall";

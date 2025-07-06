@@ -1,0 +1,18 @@
+.game-over-popup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    z-index: 3;
+    text-align: center;
+    font-size: 24px;
+}
+.childtxt {
+    margin-top: 8px;
+    margin-bottom: 12px;
+    font-size: 16px;
+}

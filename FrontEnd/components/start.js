@@ -1,16 +1,13 @@
 import { E } from "../frameWork/DOM.js";
-import { connectWebSocket } from "../ws/wsHandler.js";
+import { connectWebSocket, isSocketConnected } from "../ws/wsHandler.js";
 import Myapp from "../helper/appInstance.js";
+import { getSocket } from "../ws/wsHandler.js";
 
 export default function Start() {
-  // If user already has a name, redirect immediately
-  if (Myapp.getGlobalState("name")) {
-    Myapp.root.innerHTML = ""
-    Myapp.navigate("/lobby");
-    return
+  if (isSocketConnected()) {
+    console.log("connected already !  redirecting ...");
+    Myapp.navigate("/lobby")
   }
-
-  // Local state for input value, initialized from global state or empty
   let inputValue = Myapp.getGlobalState("name") || "";
   const error = Myapp.getGlobalState("error") || "";
 
@@ -20,10 +17,19 @@ export default function Start() {
       Myapp.setGlobalState("error", "Please enter a nickname.");
       return;
     }
-    connectWebSocket(nick);
-    Myapp.setGlobalState("name", nick);
-    Myapp.navigate("/lobby");
+
+    connectWebSocket(nick).then((connected) => {
+      if (connected) {
+        Myapp.setGlobalState("name", nick);
+        console.log("is connected:", isSocketConnected());
+        Myapp.navigate("/lobby");
+      } else {
+        console.log("Failed to connect.");
+        Myapp.setGlobalState("error", "Could not connect to server.");
+      }
+    });
   }
+
 
   return E("div", { class: "modal-backdrop" }).childs(
     E("div", { class: "modal" }).childs(
@@ -33,7 +39,7 @@ export default function Start() {
         placeholder: "Your nickname...",
         value: inputValue,
         $input: (e) => {
-          inputValue = e.target.value;  // Update local input value only
+          inputValue = e.target.value;
         },
         $keydown: (e) => {
           if (e.key === "Enter") {

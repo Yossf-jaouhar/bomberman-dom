@@ -1,40 +1,33 @@
-const { Server } = require("socket.io");
-const { game } = require("../Game/game");
+import { Server } from "socket.io";
+import { game } from "./../Game/game.js";
 
-function setupSocketIO(server) {
-  console.log("Setting up Socket.IO...");
-
+export function setupSocketIO(server) {
   const io = new Server(server);
 
   io.on("connection", (socket) => {
-
-
     // Join the game
-    const name = socket.handshake.query.name;
+    const name = (socket.handshake.query.name || "").trim();
     if (!name) {
       console.error("Name parameter is required.");
       socket.disconnect();
       return;
     }
     const room = game.join(name, socket);
-    console.log("joined", Object.keys(room.players).length);
 
-    //for testing with single PLayer 
-    room.startGame()
+    if (!room) {
+      socket.disconnect();
+      return;
+    }
 
-    room.broadcast("joined", {
-      RoomState: room.RoomState,
-      nofPlayers: Object.keys(room.players).length,
-      Counter: room.Counter,
-    });
     room.broadcast("MessageHistory", {
       Messages: room.chatMessages,
     });
 
+    console.log("playerJoined room ", Object.keys(game.rooms).length);
 
-    //receive Messages
+    //receive Messagesimport { game } from '../Game/game.js';
+
     socket.on("chatMessage", (data) => {
-      console.log(`[${name}]: ${data.text}`);
       room.chatMessages.push({ from: name, text: data.text });
       room.broadcast("chatMessage", {
         from: name,
@@ -51,40 +44,32 @@ function setupSocketIO(server) {
     });
 
     socket.on("startMoving", (data) => {
-      console.log("move requested", data);
       room.setPlayerDirection(name, data.direction);
     });
-
 
     socket.on("stopMoving", () => {
       room.setPlayerDirection(name, null);
     });
 
-
-
-
     socket.on("move", (data) => {
       console.log("move requested", data);
+
+      if (process.env.DEBUG === "true") {
+        console.log("move requested", data);
+      }
 
       room.movePlayerPixel(name, data.dx, data.dy);
     });
 
-    // Handle messages
-    socket.on("message", (message) => {
-      console.log(`[${name}]: ${message}`);
-      // socket.emit("message", `Server received: ${message}`);
-    });
-
-
-
     // Handle disconnection
     socket.on("disconnect", () => {
       room.removePlayer(name);
-      console.log(`👋 Client disconnected: ${name} left room ${room.id}. Remaining players: ${room.players.length}`);
+
+      console.log(
+        `👋 Client disconnected: ${name} left room ${
+          room.id
+        }. Remaining players: ${Object.keys(room.players).length}`
+      );
     });
-
-
   });
 }
-
-module.exports = setupSocketIO;
