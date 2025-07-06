@@ -359,12 +359,12 @@ export class Room {
     const updatedValue = player.addPowerUp(powerUp.type);
     this.powerUps.splice(powerUpIndex, 1);
 
+    
     this.broadcast("powerUpPicked", {
       name,
       type: powerUp.type,
       x,
       y,
-      newValue: updatedValue,
     });
   }
 

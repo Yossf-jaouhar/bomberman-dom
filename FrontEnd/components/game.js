@@ -31,9 +31,9 @@ export default function Game() {
   const [gameWin, setGameWin] = Myapp.useState(false);
   const [bombs, setBombs] = Myapp.useState([]);
   const [explosions, setExplosions] = Myapp.useState([]);
-  const [speed, setSpeed] = Myapp.useState(2);
-  const [maxBombs, setMaxBoms] = Myapp.useState(3);
-  const [explosionRange, setExplosionRange] = Myapp.useState(4);
+  const [speed, setSpeed] = Myapp.useState(0);
+  const [maxBombs, setMaxBoms] = Myapp.useState(0);
+  const [explosionRange, setExplosionRange] = Myapp.useState(0);
   const [powerUps, setPowerUps] = Myapp.useState([]);
 
   registerWSListeners()
@@ -305,11 +305,6 @@ export default function Game() {
     }
 
   }
-
-
-
-
-
 
 
   return E("div", { class: "game-screen" }).childs(
