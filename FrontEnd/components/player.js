@@ -11,8 +11,7 @@ export default function PlayerDivs(players, tileSize) {
         width: ${tileSize}px;
         height: ${tileSize}px;
         position: absolute;
-        left: ${player.pixelX}px;
-        top: ${player.pixelY}px;
+        transform: translate(${player.pixelX}px, ${player.pixelY}px);
         background-image: url('./images/${player.avatar}.png');
         background-size: contain;
         background-repeat: no-repeat;
@@ -20,3 +19,4 @@ export default function PlayerDivs(players, tileSize) {
     })
   );
 }
+

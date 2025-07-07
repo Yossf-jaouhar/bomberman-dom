@@ -171,13 +171,14 @@ export default function Game() {
       E("div", {
         class: `power-up ${p.type}`,
         style: `
-        left: ${p.x * tileSize + 8}px;
-        top: ${p.y * tileSize + 8}px;
-      `,
+          transform: translate(${p.x * tileSize + 8}px, ${p.y * tileSize + 8}px);
+          position: absolute;
+        `,
         key: `powerup-${p.x}-${p.y}-${index}`,
       })
     );
   }
+
 
   function applyGameStart(data) {
     setMapTiles(data.map);
