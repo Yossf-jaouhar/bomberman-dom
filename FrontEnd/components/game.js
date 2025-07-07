@@ -39,6 +39,11 @@ export default function Game() {
   registerWSListeners();
   usePlayerMovement();
   function gameRenderLoop() {
+
+    if ((players() || []).length === 1) {
+      setGameWin(true)
+    }
+   
     if (pendingState.bombsPlaced.length > 0) {
       setBombs((prev) => [
         ...prev,
@@ -215,11 +220,7 @@ export default function Game() {
   }
 
   function applyUpdatePlayers(data) {
-    if ((players() || []).length === 1) {
-      cleanupPlayerMovement();
-      setGameWin(true);
-      socket.emit("youLowsing");
-    }
+    
 
     setPlayers((prevPlayers) => {
       if (!Array.isArray(prevPlayers)) {
@@ -277,12 +278,8 @@ export default function Game() {
       }
       return prevPlayers.filter((p) => p.name !== data.name);
     });
-
-    if (data.name === playerName()) {
-      cleanupPlayerMovement();
-      setGameOver(true);
-      socket.emit("youLowsing");
-    }
+    setGameOver(true)
+    cleanupPlayerMovement()
   }
 
   return E("div", { class: "game-screen" }).childs(
@@ -313,9 +310,7 @@ export default function Game() {
             class: "Mybtn",
             $click: () => {
               Myapp.setGlobalState("name", null);
-              cleanupPlayerMovement();
               socket.close();
-              Myapp.navigate("/");
             },
           }).childs("restart")
         )
@@ -331,9 +326,7 @@ export default function Game() {
             class: "Mybtn",
             $click: () => {
               Myapp.setGlobalState("name", null);
-              cleanupPlayerMovement();
               socket.close();
-              Myapp.navigate("/");
             },
           }).childs("Play Again")
         )

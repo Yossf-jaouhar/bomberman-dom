@@ -158,6 +158,10 @@ export class Room {
   }
 
   removePlayer(name) {
+    if (!this.players) {
+      console.error("this.players is undefined!");
+      return;
+    }
     delete this.players[name];
     if (Object.keys(this.players).length === 0) {
       this.game.removeRoom(this);
@@ -319,13 +323,14 @@ export class Room {
     const newTileY = Math.floor((newY + TILE_SIZE / 2) / TILE_SIZE);
 
     const bombthere = this.bombs.some((b) => {
-      const isStandingOnBomb = b.x === player.position.x && b.y === player.position.y;
+      const isStandingOnBomb =
+        b.x === player.position.x && b.y === player.position.y;
       const isMovingIntoBomb = b.x === newTileX && b.y === newTileY;
       return isMovingIntoBomb && !isStandingOnBomb;
     });
 
     if (bombthere) {
-      return false; 
+      return false;
     }
 
     player.pixelPosition.x = newX;
@@ -452,6 +457,7 @@ export class Room {
             this.broadcast("playerDied", {
               name: player.name,
             });
+            this.removePlayer(player.name);
           }
         }
       }

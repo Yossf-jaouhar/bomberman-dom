@@ -61,9 +61,9 @@ export function setupSocketIO(server) {
       room.movePlayerPixel(name, data.dx, data.dy);
     });
 
-    socket.on("youLowsing", ()=> {
-        room.removePlayer(name);
-    })
+    socket.on("youLowsing", () => {
+      room.removePlayer(name);
+    });
 
     // Handle disconnection
     socket.on("disconnect", () => {
