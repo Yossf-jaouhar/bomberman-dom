@@ -318,6 +318,16 @@ export class Room {
     const newTileX = Math.floor((newX + TILE_SIZE / 2) / TILE_SIZE);
     const newTileY = Math.floor((newY + TILE_SIZE / 2) / TILE_SIZE);
 
+    const bombthere = this.bombs.some((b) => {
+      const isStandingOnBomb = b.x === player.position.x && b.y === player.position.y;
+      const isMovingIntoBomb = b.x === newTileX && b.y === newTileY;
+      return isMovingIntoBomb && !isStandingOnBomb;
+    });
+
+    if (bombthere) {
+      return false; 
+    }
+
     player.pixelPosition.x = newX;
     player.pixelPosition.y = newY;
 
@@ -354,14 +364,14 @@ export class Room {
     const updatedValue = player.addPowerUp(powerUp.type);
     this.powerUps.splice(powerUpIndex, 1);
 
-    console.log("-->", powerUp.type , updatedValue );
-    
+    console.log("-->", powerUp.type, updatedValue);
+
     player.socket.emit("powerUpPicked", {
       name,
       type: powerUp.type,
       x,
       y,
-      newValue: updatedValue,  
+      newValue: updatedValue,
     });
 
     this.broadcast("removePowerUp", {
