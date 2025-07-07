@@ -140,15 +140,6 @@ export class Room {
         maxBombs: player.maxBombs,
         explosionRange: player.explosionRange,
         speed: player.speed,
-        avatar: player.avatar,
-        position: {
-          x: player.position.x,
-          y: player.position.y,
-        },
-        pixelPosition: {
-          x: player.pixelPosition.x,
-          y: player.pixelPosition.y,
-        },
       });
     }
 

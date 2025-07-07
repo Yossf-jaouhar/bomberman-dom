@@ -1,6 +1,6 @@
 import { E } from "../frameWork/DOM.js";
 import Myapp from "../helper/appInstance.js";
-import { connectWebSocket, getSocket } from "../ws/wsHandler.js";
+import { getSocket } from "../ws/wsHandler.js";
 import PlayerDivs from "./player.js";
 import MapTiles from "./mapTiles.js";
 import GameHeader from "./header.js";
@@ -11,6 +11,21 @@ import BombDivs from "./bom.js";
 import registerWSListeners from "../ws/wsListeners.js";
 import { pendingState } from "../helper/wsData.js";
 
+import {
+  applyGameStart,
+  applyUpdatePlayers,
+  handlePlayerDied,
+  handleWin,
+  handleBombsPlaced,
+  handleBombsExploded,
+  handleExplosionsFullUpdate,
+  handleMapChange,
+  handleLifeUpdate,
+  handlePowerUps,
+  handlePowerUpPicked,
+  handleRemovePowerUp,
+} from "../helper/stateUpdaters.js";
+
 export default function Game() {
   let socket = getSocket();
   if (!socket) {
@@ -18,15 +33,12 @@ export default function Game() {
     return;
   }
 
-  const rows = 13;
-  const cols = 15;
   const tileSize = 40;
 
   const [mapTiles, setMapTiles] = Myapp.useState([]);
   const [players, setPlayers] = Myapp.useState([]);
   const [playerName, setPlayerName] = Myapp.useState("");
   const [playerLives, setPlayerLives] = Myapp.useState(3);
-  const [currentPlayer, setCurrentPlayer] = Myapp.useState(null);
   const [gameOver, setGameOver] = Myapp.useState(false);
   const [gameWin, setGameWin] = Myapp.useState(false);
   const [bombs, setBombs] = Myapp.useState([]);
@@ -38,162 +50,96 @@ export default function Game() {
 
   registerWSListeners();
   usePlayerMovement();
+
   function gameRenderLoop() {
+    console.log("raf working ...");
 
-    // Check for player death
     if (Object.keys(pendingState.playerDied).length > 0) {
-      setPlayers((prevPlayers) => {
-        if (!Array.isArray(prevPlayers)) {
-          prevPlayers = [];
-        }
-        return prevPlayers.filter((p) => p.name !== pendingState.playerDied.name);
-      });
-      if (pendingState.playerDied.name === playerName()) {
-        setGameOver(true);
-        cleanupPlayerMovement()
-      }
-      pendingState.playerDied = {};
-    }
-
-    // Check for win
-    if (Object.keys(pendingState.win).length > 0) {
-      setPlayers((prevPlayers) => {
-        if (!Array.isArray(prevPlayers)) {
-          prevPlayers = [];
-        }
-        return prevPlayers.filter((p) => p.name !== pendingState.win.name);
-      });
-      cleanupPlayerMovement()
-      setGameWin(true);
-      pendingState.win = {};
-    }
-    if (pendingState.bombsPlaced.length > 0) {
-      setBombs((prev) => [
-        ...prev,
-        ...pendingState.bombsPlaced.map((data) => ({
-          x: data.x,
-          y: data.y,
-          owner: data.owner,
-        })),
-      ]);
-      pendingState.bombsPlaced = [];
-    }
-
-    while (pendingState.bombsExploded.length > 0) {
-      const data = pendingState.bombsExploded.shift();
-      const bomb = data.bomb;
-
-      // remove bomb
-      setBombs((prev) =>
-        prev.filter(
-          (b) => !(b.x === bomb.x && b.y === bomb.y && b.owner === bomb.owner)
-        )
+      handlePlayerDied(
+        pendingState,
+        playerName,
+        setPlayers,
+        setGameOver,
+        cleanupPlayerMovement
       );
-
-      // add explosion
-      setExplosions((prev) => {
-        const destroyed = data.destroyedBlocks.map((block) => ({
-          x: block.x,
-          y: block.y,
-          owner: bomb.owner,
-        }));
-        return [
-          ...prev,
-          { x: bomb.x, y: bomb.y, owner: bomb.owner },
-          ...destroyed,
-        ];
-      });
-
-      // clear explosion after 100ms
-      setTimeout(() => {
-        setExplosions((prev) =>
-          prev.filter(
-            (e) =>
-              !(e.x === bomb.x && e.y === bomb.y && e.owner === bomb.owner) &&
-              !data.destroyedBlocks.some((dt) => dt.x === e.x && dt.y === e.y)
-          )
-        );
-      }, 100);
     }
+
+    if (Object.keys(pendingState.win).length > 0) {
+      handleWin(
+        pendingState,
+        setPlayers,
+        cleanupPlayerMovement,
+        setGameWin
+      );
+    }
+
+    if (pendingState.bombsPlaced.length > 0) {
+      handleBombsPlaced(pendingState, setBombs);
+    }
+
+    handleBombsExploded(pendingState, setBombs, setExplosions);
 
     if (pendingState.explosionsFullUpdate) {
-      setExplosions(pendingState.explosionsFullUpdate.explosions);
-      pendingState.explosionsFullUpdate = null;
+      handleExplosionsFullUpdate(pendingState, setExplosions);
     }
 
     if (pendingState.gameStart) {
-      applyGameStart(pendingState.gameStart);
+      applyGameStart(
+        pendingState.gameStart,
+        setMapTiles,
+        setPlayers,
+        tileSize
+      );
       pendingState.gameStart = null;
     }
 
     if (pendingState.playerData) {
-      applyPlayerData(pendingState.playerData);
+      setPlayerName(pendingState.playerData.name);
+      setPlayerLives(pendingState.playerData.lives);
+      setSpeed(pendingState.playerData.speed);
+      setMaxBoms(pendingState.playerData.maxBombs);
+      setExplosionRange(pendingState.playerData.explosionRange);
       pendingState.playerData = null;
     }
 
     if (pendingState.updatePlayers) {
-      applyUpdatePlayers(pendingState.updatePlayers);
+      applyUpdatePlayers(pendingState.updatePlayers, setPlayers);
       pendingState.updatePlayers = null;
     }
 
     if (pendingState.mapChange) {
-      setMapTiles(pendingState.mapChange.map);
-      pendingState.mapChange = null;
+      handleMapChange(pendingState, setMapTiles);
     }
 
     if (pendingState.lifeUpdate) {
-      setPlayerLives(pendingState.lifeUpdate.lives);
-      pendingState.lifeUpdate = null;
+      handleLifeUpdate(pendingState, setPlayerLives);
     }
 
-    // if (pendingState.playerDied) {
-    //   applyPlayerDied(pendingState.playerDied);
-    //   pendingState.playerDied = null;
-    // }
-
-    //powerUps
-    if (Object.keys(pendingState.powerUps).length != 0) {
-      setPowerUps((prev) => [...prev, pendingState.powerUps]);
-      pendingState.powerUps = {};
+    if (Object.keys(pendingState.powerUps).length !== 0) {
+      handlePowerUps(pendingState, setPowerUps);
     }
 
     if (pendingState.powerUpPicked) {
-      const { newValue, x, y, type } = pendingState.powerUpPicked;
-
-      setPowerUps((prev) => prev.filter((p) => !(p.x === x && p.y === y)));
-
-      switch (type) {
-        case "Speed":
-          setSpeed(newValue);
-          break;
-
-        case "Bomb":
-          setMaxBoms(newValue);
-          break;
-
-        case "Flame":
-          setExplosionRange(newValue);
-          break;
-
-        default:
-          console.warn(`Unknown power-up type: ${type}`);
-          break;
-      }
-
-      pendingState.powerUpPicked = null;
+      handlePowerUpPicked(
+        pendingState,
+        setPowerUps,
+        setSpeed,
+        setMaxBoms,
+        setExplosionRange
+      );
     }
 
     if (pendingState.removePowerUp) {
-      const { x, y } = pendingState.removePowerUp;
-      setPowerUps((prev) => prev.filter((p) => !(p.x === x && p.y === y)));
-      pendingState.removePowerUp = null;
+      handleRemovePowerUp(pendingState, setPowerUps);
     }
-
+    if (gameOver() || gameWin()) {
+      console.log("cleaning the movement ...");
+      cleanupPlayerMovement()
+      console.log("Game over — stopping animation loop.");
+      return;
+    }
     requestAnimationFrame(gameRenderLoop);
   }
-
-  requestAnimationFrame(gameRenderLoop);
-
   function PowerUpDivs(powerUps, tileSize) {
     return powerUps.map((p, index) =>
       E("div", {
@@ -206,106 +152,7 @@ export default function Game() {
       })
     );
   }
-
-
-  function applyGameStart(data) {
-    setMapTiles(data.map);
-
-    const playersArray = Object.entries(data.players).map(([name, info]) => ({
-      name,
-      pixelX: info.x * tileSize,
-      pixelY: info.y * tileSize,
-      tileX: info.x,
-      tileY: info.y,
-      avatar: info.avatar?.replace(".png", "") || "",
-    }));
-
-    setPlayers(playersArray);
-  }
-
-  function applyPlayerData(data) {
-    setPlayerName(data.name);
-    setPlayerLives(data.lives);
-    setSpeed(data.speed);
-    setMaxBoms(data.maxBombs);
-    setExplosionRange(data.explosionRange);
-    setCurrentPlayer({
-      name: data.name,
-      lives: data.lives,
-      maxBombs: data.maxBombs,
-      explosionRange: data.explosionRange,
-      speed: data.speed,
-      avatar: data.avatar,
-      pixelX: data.position.x * tileSize,
-      pixelY: data.position.y * tileSize,
-      tileX: data.position.x,
-      tileY: data.position.y,
-    });
-  }
-
-  function applyUpdatePlayers(data) {
-
-
-    setPlayers((prevPlayers) => {
-      if (!Array.isArray(prevPlayers)) {
-        prevPlayers = [];
-      }
-
-      const updatedPlayers = [];
-
-      const incomingNames = Object.keys(data.playersPositions);
-
-      const playerMap = new Map(prevPlayers.map((p) => [p.name, p]));
-
-      for (const name of incomingNames) {
-        const pos = data.playersPositions[name];
-        const existing = playerMap.get(name);
-
-        if (existing) {
-          updatedPlayers.push({
-            ...existing,
-            pixelX: pos.pixelX,
-            pixelY: pos.pixelY,
-            tileX: pos.tileX,
-            tileY: pos.tileY,
-          });
-        } else {
-          updatedPlayers.push({
-            name,
-            pixelX: pos.pixelX,
-            pixelY: pos.pixelY,
-            tileX: pos.tileX,
-            tileY: pos.tileY,
-          });
-        }
-      }
-
-      return updatedPlayers;
-    });
-
-    const pos = data.playersPositions[playerName()];
-    if (pos) {
-      setCurrentPlayer((prev) => ({
-        ...prev,
-        pixelX: pos.pixelX,
-        pixelY: pos.pixelY,
-        tileX: pos.tileX,
-        tileY: pos.tileY,
-      }));
-    }
-  }
-
-  // function applyPlayerDied(data) {
-  //   setPlayers((prevPlayers) => {
-  //     if (!Array.isArray(prevPlayers)) {
-  //       prevPlayers = [];
-  //     }
-  //     return prevPlayers.filter((p) => p.name !== data.name);
-  //   });
-  //   setGameOver(true)
-  //   cleanupPlayerMovement()
-  // }
-
+  requestAnimationFrame(gameRenderLoop);
   return E("div", { class: "game-screen" }).childs(
     GameHeader(
       playerName(),
@@ -317,7 +164,7 @@ export default function Game() {
     E("div", {
       class: "map-grid",
     }).childs(
-      ...MapTiles(mapTiles() || [], tileSize, cols),
+      ...MapTiles(mapTiles() || []),
       ...PlayerDivs(players() || [], tileSize),
       ...BombDivs(bombs(), explosions()),
       ...PowerUpDivs(powerUps() || [], tileSize)
