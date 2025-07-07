@@ -63,4 +63,9 @@ export default function registerWSListeners() {
   socket.on("powerUpPicked", (data) => {
     pendingState.powerUpPicked = data;
   });
+
+  socket.on("removePowerUp", (data) => {
+    pendingState.removePowerUp = data;
+  });
+
 }
