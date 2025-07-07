@@ -40,10 +40,33 @@ export default function Game() {
   usePlayerMovement();
   function gameRenderLoop() {
 
-    if ((players() || []).length === 1) {
-      setGameWin(true)
+    // Check for player death
+    if (Object.keys(pendingState.playerDied).length > 0) {
+      setPlayers((prevPlayers) => {
+        if (!Array.isArray(prevPlayers)) {
+          prevPlayers = [];
+        }
+        return prevPlayers.filter((p) => p.name !== pendingState.playerDied.name);
+      });
+      if (pendingState.playerDied.name === playerName()) {
+        setGameOver(true);
+        cleanupPlayerMovement()
+      }
+      pendingState.playerDied = {};
     }
-   
+
+    // Check for win
+    if (Object.keys(pendingState.win).length > 0) {
+      setPlayers((prevPlayers) => {
+        if (!Array.isArray(prevPlayers)) {
+          prevPlayers = [];
+        }
+        return prevPlayers.filter((p) => p.name !== pendingState.win.name);
+      });
+      cleanupPlayerMovement()
+      setGameWin(true);
+      pendingState.win = {};
+    }
     if (pendingState.bombsPlaced.length > 0) {
       setBombs((prev) => [
         ...prev,
@@ -123,10 +146,10 @@ export default function Game() {
       pendingState.lifeUpdate = null;
     }
 
-    if (pendingState.playerDied) {
-      applyPlayerDied(pendingState.playerDied);
-      pendingState.playerDied = null;
-    }
+    // if (pendingState.playerDied) {
+    //   applyPlayerDied(pendingState.playerDied);
+    //   pendingState.playerDied = null;
+    // }
 
     //powerUps
     if (Object.keys(pendingState.powerUps).length != 0) {
@@ -221,7 +244,7 @@ export default function Game() {
   }
 
   function applyUpdatePlayers(data) {
-    
+
 
     setPlayers((prevPlayers) => {
       if (!Array.isArray(prevPlayers)) {
@@ -272,16 +295,16 @@ export default function Game() {
     }
   }
 
-  function applyPlayerDied(data) {
-    setPlayers((prevPlayers) => {
-      if (!Array.isArray(prevPlayers)) {
-        prevPlayers = [];
-      }
-      return prevPlayers.filter((p) => p.name !== data.name);
-    });
-    setGameOver(true)
-    cleanupPlayerMovement()
-  }
+  // function applyPlayerDied(data) {
+  //   setPlayers((prevPlayers) => {
+  //     if (!Array.isArray(prevPlayers)) {
+  //       prevPlayers = [];
+  //     }
+  //     return prevPlayers.filter((p) => p.name !== data.name);
+  //   });
+  //   setGameOver(true)
+  //   cleanupPlayerMovement()
+  // }
 
   return E("div", { class: "game-screen" }).childs(
     GameHeader(
@@ -301,36 +324,39 @@ export default function Game() {
     ),
     gameOver()
       ? E("div", {
-          class: "game-over-popup",
-        }).childs(
-          "Game Over",
-          E("div", { class: "childtxt" }).childs(
-            "Press any key to return to start"
-          ),
-          E("button", {
-            class: "Mybtn",
-            $click: () => {
-              Myapp.setGlobalState("name", null);
-              socket.close();
-            },
-          }).childs("restart")
-        )
+        class: "game-over-popup",
+      }).childs(
+        "Game Over",
+        E("div", { class: "childtxt" }).childs(
+          "Press any key to return to start"
+        ),
+        E("button", {
+          class: "Mybtn",
+          $click: () => {
+            Myapp.setGlobalState("name", null);
+            setGameOver(false);
+            setGameWin(false);
+            socket.close();
+          },
+        }).childs("restart")
+      )
       : null,
-
     gameWin()
       ? E("div", {
-          class: "game-over-popup",
-        }).childs(
-          "🎉 You Win! 🎉",
-          E("div", { class: "childtxt" }).childs("Great job, champ!"),
-          E("button", {
-            class: "Mybtn",
-            $click: () => {
-              Myapp.setGlobalState("name", null);
-              socket.close();
-            },
-          }).childs("Play Again")
-        )
+        class: "game-over-popup",
+      }).childs(
+        "🎉 You Win! 🎉",
+        E("div", { class: "childtxt" }).childs("Great job, champ!"),
+        E("button", {
+          class: "Mybtn",
+          $click: () => {
+            Myapp.setGlobalState("name", null);
+            setGameOver(false);
+            setGameWin(false);
+            socket.close();
+          },
+        }).childs("Play Again")
+      )
       : null
   );
 }

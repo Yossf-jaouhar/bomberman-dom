@@ -26,8 +26,6 @@ export function connectWebSocket(nickname) {
       Myapp.setGlobalState("name", "");
       socket.close();
       socket = null;
-      console.log("Socket.IO disconnected");
-      alert("connection lost try again.");
       location.reload()
     });
   });

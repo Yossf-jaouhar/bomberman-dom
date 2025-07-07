@@ -67,5 +67,8 @@ export default function registerWSListeners() {
   socket.on("removePowerUp", (data) => {
     pendingState.removePowerUp = data;
   });
+  socket.on("playerWon", (data) => {
+    pendingState.win = data;
+  });
 
 }
