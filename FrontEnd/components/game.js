@@ -130,7 +130,7 @@ export default function Game() {
     }
 
     if (pendingState.powerUpPicked) {
-      const {newValue, x, y, type} = pendingState.powerUpPicked;
+      const { newValue, x, y, type } = pendingState.powerUpPicked;
 
       setPowerUps((prev) => prev.filter((p) => !(p.x === x && p.y === y)));
 
@@ -216,7 +216,9 @@ export default function Game() {
 
   function applyUpdatePlayers(data) {
     if ((players() || []).length === 1) {
+      cleanupPlayerMovement();
       setGameWin(true);
+      socket.emit("youLowsing");
     }
 
     setPlayers((prevPlayers) => {
@@ -277,7 +279,9 @@ export default function Game() {
     });
 
     if (data.name === playerName()) {
+      cleanupPlayerMovement();
       setGameOver(true);
+      socket.emit("youLowsing");
     }
   }
 
