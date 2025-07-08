@@ -25,7 +25,7 @@ import {
   handlePowerUpPicked,
   handleRemovePowerUp,
 } from "../helper/stateUpdaters.js";
-
+let isR =  false
 export default function Game() {
   let socket = getSocket();
   if (!socket) {
@@ -152,7 +152,10 @@ export default function Game() {
       })
     );
   }
-  requestAnimationFrame(gameRenderLoop);
+  if (!isR) {
+    isR =  true
+    requestAnimationFrame(gameRenderLoop);
+  }
   return E("div", { class: "game-screen" }).childs(
     GameHeader(
       playerName(),
