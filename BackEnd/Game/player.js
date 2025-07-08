@@ -46,8 +46,11 @@ export class Player {
         break;
 
       case "Speed":
-        if (this.speed < 3) {
-          this.speed += 1;
+        if (this.speed < 2) {
+          this.speed += 0.5;
+          if (this.speed > 2) {
+            this.speed = 2;
+          }
           this.powerUps.push(type);
         }
         newValue = this.speed;

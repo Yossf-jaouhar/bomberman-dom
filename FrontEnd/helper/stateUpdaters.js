@@ -59,6 +59,8 @@ export function handlePlayerDied(
   playerName,
   setPlayers,
   setGameOver,
+  setBombs ,
+  setExplosions,
   cleanupPlayerMovement
 ) {
   setPlayers((prevPlayers) => {
@@ -72,6 +74,8 @@ export function handlePlayerDied(
 
   if (pendingState.playerDied.name === playerName()) {
     cleanupPlayerMovement();
+    setBombs([])
+    setExplosions([])
     setGameOver(true);
   }
   pendingState.playerDied = {};

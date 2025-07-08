@@ -206,7 +206,6 @@ export class Room {
           avatar: p.avatar,
         };
       }
-
       this.broadcast("updatePlayers", { playersPositions });
     }
   }

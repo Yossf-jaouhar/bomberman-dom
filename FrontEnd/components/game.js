@@ -60,6 +60,8 @@ export default function Game() {
         playerName,
         setPlayers,
         setGameOver,
+        setBombs,
+        setExplosions,
         cleanupPlayerMovement
       );
     }
