@@ -69,7 +69,8 @@ export default function Game() {
         pendingState,
         setPlayers,
         cleanupPlayerMovement,
-        setGameWin
+        setGameWin,
+        setMapTiles
       );
     }
 
@@ -108,7 +109,9 @@ export default function Game() {
     }
 
     if (pendingState.mapChange) {
-      handleMapChange(pendingState, setMapTiles);
+      if (!gameWin()) {
+        handleMapChange(pendingState, setMapTiles);
+      }
     }
 
     if (pendingState.lifeUpdate) {
