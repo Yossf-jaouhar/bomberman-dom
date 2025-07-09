@@ -3,7 +3,7 @@ import Myapp from "../helper/appInstance.js";
 let socket;
 export function connectWebSocket(nickname) {
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     socket = io(`http://${window.location.hostname}:3000`, {
       query: { name: nickname },
     });

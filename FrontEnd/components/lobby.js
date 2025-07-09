@@ -37,8 +37,6 @@ export default function Lobby() {
       setRoomState("solo");
       setCounter(null);
       setNoOfPlayers(1);
-
-      alert("All other players left. Returning to solo mode.");
     });
 
     if (!isStart) {
