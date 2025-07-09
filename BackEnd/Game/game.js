@@ -21,6 +21,10 @@ export class Game {
   join(playerName, socket) {
     for (const id in this.rooms) {
       const room = this.rooms[id];
+      if (Object.keys(room.players).length == 0) {
+        this.removeRoom(room);
+        continue
+      }
             
       if ((room.RoomState === "preparing")) {
         continue
