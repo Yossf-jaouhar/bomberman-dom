@@ -5,7 +5,7 @@ export default function GameHeader(name, lives, speed, maxBombs, explosionRange)
     E("div", { class: "player-name" }).childs(`${name}`),
 
     E("div", { class: "player-powerups" }).childs(
-      powerUpIcon("../images/speedRapid.png", speed),
+      powerUpIcon("../images/speedRapid.png", convertSpeedDisplay(speed)),
       powerUpIcon("../images/maxBomb.png", maxBombs),
       powerUpIcon("../images/flameRange.png", explosionRange)
     ),
@@ -27,4 +27,10 @@ function powerUpIcon(imagePath, count) {
     }),
     E("span", { class: "powerup-count" }).childs(`x ${count}`)
   );
+}
+
+function convertSpeedDisplay(speed) {
+  if (speed === 1.5) return 2;
+  if (speed === 2) return 3;
+  return speed;
 }

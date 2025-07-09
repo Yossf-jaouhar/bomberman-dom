@@ -136,6 +136,7 @@ export default function Game() {
     }
     if (gameOver() || gameWin()) {
       console.log("cleaning the movement ...");
+      setPowerUps([])
       cleanupPlayerMovement()
       console.log("Game over — stopping animation loop.");
       return;

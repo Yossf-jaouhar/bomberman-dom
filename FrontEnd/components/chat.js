@@ -5,16 +5,21 @@ let isOn = false
 export default function Chat() {
     const socket = getSocket();
     const name = Myapp.getGlobalState("name");
-
     const [chatMessages, setChatMessages] = Myapp.useState([]);
     const [hidden, setHidden] = Myapp.useState(false);
+    console.log('messages', chatMessages());
+
     if (!isOn) {
+        console.log("entered the if ");
+
         socket.on("MessageHistory", (data) => {
+            console.log("chat Messages", data);
             setChatMessages(data.Messages)
         })
         socket.on("chatMessage", (data) => {
             setChatMessages((prev) => [...prev, data]);
         });
+        socket.emit("getMessageHistory");
         isOn = true
     }
     function sendMessage(value) {

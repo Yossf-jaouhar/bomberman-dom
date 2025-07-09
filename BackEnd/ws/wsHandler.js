@@ -19,8 +19,13 @@ export function setupSocketIO(server) {
       return;
     }
 
-    room.broadcast("MessageHistory", {
-      Messages: room.chatMessages,
+    // room.broadcast("MessageHistory", {
+    //   Messages: room.chatMessages,
+    // });
+    socket.on("getMessageHistory", () => {
+      socket.emit("MessageHistory", {
+        Messages: room.chatMessages,
+      });
     });
 
     console.log("playerJoined room ", Object.keys(game.rooms).length);
@@ -70,8 +75,7 @@ export function setupSocketIO(server) {
       room.removePlayer(name);
 
       console.log(
-        `👋 Client disconnected: ${name} left room ${
-          room.id
+        `👋 Client disconnected: ${name} left room ${room.id
         }. Remaining players: ${Object.keys(room.players).length}`
       );
     });
