@@ -13,7 +13,7 @@ export default function Start() {
 
   function handleNickname() {
     const nick = inputValue.trim();
-    if (!nick) {
+    if (!nick || nick.length >= 10) {
       Myapp.setGlobalState("error", "Please enter a nickname.");
       return;
     }
