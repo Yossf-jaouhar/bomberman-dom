@@ -69,8 +69,7 @@ export default function Game() {
         pendingState,
         setPlayers,
         cleanupPlayerMovement,
-        setGameWin,
-        setMapTiles
+        setGameWin
       );
     }
 

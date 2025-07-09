@@ -85,8 +85,7 @@ export function handleWin(
   pendingState,
   setPlayers,
   cleanupPlayerMovement,
-  setGameWin,
-  setMapTiles
+  setGameWin
 ) {
   setPlayers((prevPlayers) => {
     if (!Array.isArray(prevPlayers)) {
@@ -96,7 +95,6 @@ export function handleWin(
   });
   cleanupPlayerMovement();
   setGameWin(true);
-  setMapTiles([]);
   pendingState.win = {};
 }
 
