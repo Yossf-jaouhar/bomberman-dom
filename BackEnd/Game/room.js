@@ -75,7 +75,6 @@ export class Room {
 
       this.counter--;
       this.broadcast("preparing", { counter: this.counter, nofplayers });
-
       if (this.counter <= 0) {
         clearInterval(this.timeIntp);
         this.timeIntp = null;
@@ -149,15 +148,39 @@ export class Room {
   }
 
   removePlayer(name) {
-    if (!this.players) {
-      console.error("this.players is undefined!");
-      return;
-    }
     delete this.players[name];
-    if (Object.keys(this.players).length === 0) {
-      this.game.removeRoom(this);
+
+    const playerCount = Object.keys(this.players).length;
+
+    this.broadcast("playerLeft", {
+      name,
+      players: Object.keys(this.players),
+    });
+
+    if (playerCount === 1) {
+      console.log("Only one player left. Returning to solo mode.");
+
+      if (this.timeIntw) {
+        clearInterval(this.timeIntw);
+        this.timeIntw = null;
+        this.Counter = 20;
+      }
+
+      if (this.timeIntp) {
+        clearInterval(this.timeIntp);
+        this.timeIntp = null;
+        this.counter = 10;
+      }
+
+      this.RoomState = "solo";
+
+      const remainingPlayer = Object.values(this.players)[0];
+      if (remainingPlayer) {
+        remainingPlayer.socket.emit("returnToSolo");
+      }
     }
   }
+
 
   setPlayerDirection(name, direction) {
     const player = this.players[name];

@@ -17,21 +17,29 @@ export default function Lobby() {
 
   if (!listeningOn) {
     socket.on("waiting", (data) => {
-      
       setRoomState("waiting");
       setCounter(data.Counter);
       setNoOfPlayers(data.nofplayers);
     });
 
     socket.on("preparing", (data) => {
-      console.log("hi-->",data);  
+      console.log("hi-->", data);
       setRoomState("preparing");
       setCounter(data.counter);
       setNoOfPlayers(data.nofplayers);
-
     });
 
-    socket.on("playerJoined", (data) => {});
+    socket.on("playerJoined", (data) => { });
+
+    socket.on("returnToSolo", () => {
+      console.log("Received returnToSolo from backend");
+
+      setRoomState("solo");
+      setCounter(null);
+      setNoOfPlayers(1);
+
+      alert("All other players left. Returning to solo mode.");
+    });
 
     if (!isStart) {
       socket.on("Start", () => {
@@ -41,6 +49,7 @@ export default function Lobby() {
     }
     listeningOn = true;
   }
+
 
   return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
     E("div", { class: "LobbyState df center gp24" }).childs(
