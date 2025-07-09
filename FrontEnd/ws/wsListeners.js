@@ -34,7 +34,6 @@ export default function registerWSListeners() {
   });
   
   socket.on("playerData", (data) => {
-    console.log("playerData" , data);
         pendingState.playerData = data;
   });
 
@@ -54,9 +53,7 @@ export default function registerWSListeners() {
     pendingState.playerDied = data;
   });
 
-  socket.on("powerUpSpawned", (data) => {
-    console.log("powerUpspawned");
-    
+  socket.on("powerUpSpawned", (data) => {    
     pendingState.powerUps = data;
   });
 

@@ -52,8 +52,6 @@ export default function Game() {
   usePlayerMovement();
 
   function gameRenderLoop() {
-    console.log("raf working ...");
-
     if (Object.keys(pendingState.playerDied).length > 0) {
       handlePlayerDied(
         pendingState,
