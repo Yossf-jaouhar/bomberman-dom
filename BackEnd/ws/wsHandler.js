@@ -19,9 +19,7 @@ export function setupSocketIO(server) {
       return;
     }
 
-    // room.broadcast("MessageHistory", {
-    //   Messages: room.chatMessages,
-    // });
+ 
     socket.on("getMessageHistory", () => {
       socket.emit("MessageHistory", {
         Messages: room.chatMessages,
@@ -44,10 +42,6 @@ export function setupSocketIO(server) {
       room.placeBomb(name);
     });
 
-    socket.on("pickupPowerUp", (data) => {
-      room.pickupPowerUp(name, data.x, data.y);
-    });
-
     socket.on("startMoving", (data) => {
       room.setPlayerDirection(name, data.direction);
     });
@@ -56,23 +50,9 @@ export function setupSocketIO(server) {
       room.setPlayerDirection(name, null);
     });
 
-    socket.on("move", (data) => {
-      console.log("move requested", data);
-
-      if (process.env.DEBUG === "true") {
-        console.log("move requested", data);
-      }
-
-      room.movePlayerPixel(name, data.dx, data.dy);
-    });
-
-    socket.on("youLowsing", () => {
-      room.removePlayer(name);
-    });
 
     // Handle disconnection
     socket.on("disconnect", () => {
-
       room.removePlayer(name);
       game.removeRoom(room)
       console.log(
