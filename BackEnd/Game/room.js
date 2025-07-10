@@ -471,20 +471,21 @@ export class Room {
               name: player.name,
             });
             this.removePlayer(player.name);
+            // Check if there’s only one player left
+            const remainingPlayers = Object.values(this.players);
+            if (remainingPlayers.length === 1) {
+              const winner = remainingPlayers[0];
+              this.broadcast("playerWon", {
+                name: winner.name,
+              });
+              return
+            }
+
           }
         }
       }
     }
 
-    // Check if there’s only one player left
-    const remainingPlayers = Object.values(this.players);
-    if (remainingPlayers.length === 1) {
-      const winner = remainingPlayers[0];
-      this.broadcast("playerWon", {
-        name: winner.name,
-      });
-      return
-    }
 
 
     this.broadcast("bombExploded", {
