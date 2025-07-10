@@ -125,15 +125,7 @@ export class Room {
         y: player.position.y,
         avatar: player.avatar,
       };
-    }
-
-    this.broadcast("gameStart", {
-      map: this.map.tiles,
-      players: publicPlayersData,
-    });
-
-    for (const player of Object.values(this.players)) {
-      player.socket.emit("playerData", {
+       player.socket.emit("playerData", {
         name: player.name,
         lives: player.lives,
         maxBombs: player.maxBombs,
@@ -142,6 +134,11 @@ export class Room {
       });
     }
 
+    this.broadcast("gameStart", {
+      map: this.map.tiles,
+      players: publicPlayersData,
+    });
+    
     setInterval(() => {
       this.update();
     }, 1000 / 60);
