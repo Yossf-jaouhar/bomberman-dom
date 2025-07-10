@@ -25,7 +25,7 @@ import {
   handlePowerUpPicked,
   handleRemovePowerUp,
 } from "../helper/stateUpdaters.js";
-let isR =  false
+let isR = false
 export default function Game() {
   let socket = getSocket();
   if (!socket) {
@@ -71,6 +71,10 @@ export default function Game() {
         cleanupPlayerMovement,
         setGameWin
       );
+      setMapTiles(new Array(195).fill(0))
+      setPowerUps([])
+      cleanupPlayerMovement()
+      return
     }
 
     if (pendingState.bombsPlaced.length > 0) {
@@ -156,7 +160,7 @@ export default function Game() {
     );
   }
   if (!isR) {
-    isR =  true
+    isR = true
     requestAnimationFrame(gameRenderLoop);
   }
   return E("div", { class: "game-screen" }).childs(

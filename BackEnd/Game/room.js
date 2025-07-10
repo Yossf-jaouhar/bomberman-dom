@@ -9,8 +9,8 @@ export class Room {
     this.game = gameInstance;
     this.RoomState = null;
     this.players = {};
-    this.Counter = 3;
-    this.counter = 1;
+    this.Counter = 10;
+    this.counter = 5;
     this.timeIntw = null;
     this.timeIntp = null;
     this.chatMessages = [];
@@ -483,6 +483,7 @@ export class Room {
       this.broadcast("playerWon", {
         name: winner.name,
       });
+      return
     }
 
 

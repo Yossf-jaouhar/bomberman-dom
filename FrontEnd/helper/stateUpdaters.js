@@ -45,7 +45,7 @@ export function applyUpdatePlayers(data, setPlayers) {
           pixelX: pos.pixelX,
           pixelY: pos.pixelY,
           tileX: pos.tileX,
-          tileY: pos.tileY,
+          tileY: pos.tileY, 
         });
       }
     }
