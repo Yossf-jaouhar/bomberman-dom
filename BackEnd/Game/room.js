@@ -107,13 +107,7 @@ export class Room {
       player.resetPosition(pos.x, pos.y);
 
       if (!player.avatar) {
-        if (i < shuffledAvatars.length) {
-          player.avatar = shuffledAvatars[i];
-        } else {
-          console.warn("More players than avatars (may repeat)");
-          player.avatar =
-            avatarList[Math.floor(Math.random() * avatarList.length)];
-        }
+          player.avatar = shuffledAvatars[i];        
       }
       i++;
     }
