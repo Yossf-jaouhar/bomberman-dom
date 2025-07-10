@@ -1,12 +1,12 @@
 import { E } from "../frameWork/DOM.js";
 import { connectWebSocket, isSocketConnected } from "../ws/wsHandler.js";
 import Myapp from "../helper/appInstance.js";
-import { getSocket } from "../ws/wsHandler.js";
 
 export default function Start() {
   if (isSocketConnected()) {
     console.log("connected already !  redirecting ...");
     Myapp.navigate("/lobby")
+    return
   }
   let inputValue = Myapp.getGlobalState("name") || "";
   const error = Myapp.getGlobalState("error") || "";
@@ -21,7 +21,6 @@ export default function Start() {
     connectWebSocket(nick).then((connected) => {
       if (connected) {
         Myapp.setGlobalState("name", nick);
-        console.log("is connected:", isSocketConnected());
         Myapp.navigate("/lobby");
       } else {
         console.log("Failed to connect.");

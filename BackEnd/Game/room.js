@@ -9,8 +9,8 @@ export class Room {
     this.game = gameInstance;
     this.RoomState = null;
     this.players = {};
-    this.Counter = 10;
-    this.counter = 5;
+    this.Counter = 20;
+    this.counter = 10;
     this.timeIntw = null;
     this.timeIntp = null;
     this.chatMessages = [];

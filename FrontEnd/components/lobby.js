@@ -10,6 +10,10 @@ export default function Lobby() {
     return;
   }
   const socket = getSocket();
+  window.onpopstate = () => {
+    Myapp.setGlobalState("name", "");
+    socket.close();
+  };
 
   let [nOfPlayers, setNoOfPlayers] = Myapp.useState(1);
   let [counter, setCounter] = Myapp.useState(null);
@@ -23,7 +27,6 @@ export default function Lobby() {
     });
 
     socket.on("preparing", (data) => {
-      console.log("hi-->", data);
       setRoomState("preparing");
       setCounter(data.counter);
       setNoOfPlayers(data.nofplayers);
@@ -32,7 +35,6 @@ export default function Lobby() {
     socket.on("playerJoined", (data) => { });
 
     socket.on("returnToSolo", () => {
-      console.log("Received returnToSolo from backend");
 
       setRoomState("solo");
       setCounter(null);

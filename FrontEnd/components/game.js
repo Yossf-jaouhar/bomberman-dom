@@ -47,6 +47,13 @@ export default function Game() {
   const [maxBombs, setMaxBoms] = Myapp.useState(3);
   const [explosionRange, setExplosionRange] = Myapp.useState(3);
   const [powerUps, setPowerUps] = Myapp.useState([]);
+  
+  window.onpopstate = () => {
+    Myapp.setGlobalState("name", "");
+    socket.close();
+    isR = false;
+    cleanupPlayerMovement();
+  };
 
   registerWSListeners();
   usePlayerMovement();
