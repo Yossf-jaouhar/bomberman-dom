@@ -474,9 +474,9 @@ export class Room {
             // Check if there’s only one player left
             const remainingPlayers = Object.values(this.players);
             if (remainingPlayers.length === 1) {
-              const winner = remainingPlayers[0];
+              const user = remainingPlayers[0];
               this.broadcast("playerWon", {
-                name: winner.name,
+                name: user.name,
               });
               return
             }

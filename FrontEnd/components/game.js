@@ -71,10 +71,6 @@ export default function Game() {
         cleanupPlayerMovement,
         setGameWin
       );
-      setMapTiles(new Array(195).fill(0))
-      setPowerUps([])
-      cleanupPlayerMovement()
-      return
     }
 
     if (pendingState.bombsPlaced.length > 0) {
