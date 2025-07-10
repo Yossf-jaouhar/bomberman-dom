@@ -158,13 +158,16 @@ export class Room {
     });
 
     if (playerCount === 1) {
-      console.log("Only one player left. Returning to solo mode.");
-
       if (this.timeIntw) {
         clearInterval(this.timeIntw);
         this.timeIntw = null;
         this.Counter = 20;
       }
+      const playerWon = Object.values(this.players)[0];
+
+      this.broadcast("playerWon", {
+        name: playerWon.name,
+      });
 
       if (this.timeIntp) {
         clearInterval(this.timeIntp);

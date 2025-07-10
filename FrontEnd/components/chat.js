@@ -46,7 +46,7 @@ export default function Chat() {
             ),
             E('div', { class: 'chat-input df gp8' }).childs(
                 E('input', {
-                    attrs: { placeholder: 'Type a message...' },
+                    placeholder: 'Type a message...',
                     $keydown: (e) => {
                         if (e.key === 'Enter') {
                             sendMessage(e.target.value);

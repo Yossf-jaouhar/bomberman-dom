@@ -160,21 +160,27 @@ export default function Game() {
     requestAnimationFrame(gameRenderLoop);
   }
   return E("div", { class: "game-screen" }).childs(
-    GameHeader(
-      playerName(),
-      playerLives(),
-      speed(),
-      maxBombs(),
-      explosionRange()
+    // Only show header and map if not game over or win
+    !(gameOver() || gameWin()) &&
+    E("div").childs(
+      GameHeader(
+        playerName(),
+        playerLives(),
+        speed(),
+        maxBombs(),
+        explosionRange()
+      ),
+      E("div", {
+        class: "map-grid",
+      }).childs(
+        ...MapTiles(mapTiles() || []),
+        ...PlayerDivs(players() || [], tileSize),
+        ...BombDivs(bombs(), explosions()),
+        ...PowerUpDivs(powerUps() || [], tileSize)
+      )
     ),
-    E("div", {
-      class: "map-grid",
-    }).childs(
-      ...MapTiles(mapTiles() || []),
-      ...PlayerDivs(players() || [], tileSize),
-      ...BombDivs(bombs(), explosions()),
-      ...PowerUpDivs(powerUps() || [], tileSize)
-    ),
+
+    // Game Over popup
     gameOver()
       ? E("div", {
         class: "game-over-popup",
@@ -194,6 +200,8 @@ export default function Game() {
         }).childs("restart")
       )
       : null,
+
+    // Game Win popup
     gameWin()
       ? E("div", {
         class: "game-over-popup",
@@ -212,4 +220,5 @@ export default function Game() {
       )
       : null
   );
+
 }
