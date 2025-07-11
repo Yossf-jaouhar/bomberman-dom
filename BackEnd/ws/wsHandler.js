@@ -54,7 +54,9 @@ export function setupSocketIO(server) {
     // Handle disconnection
     socket.on("disconnect", () => {
       room.removePlayer(name);
-      game.removeRoom(room)
+      if (room.RoomState === "started" ) {
+        game.removeRoom(room)
+      }
       console.log(
         `👋 Client disconnected: ${name} left room ${room.id
         }. Remaining players: ${Object.keys(room.players).length}`

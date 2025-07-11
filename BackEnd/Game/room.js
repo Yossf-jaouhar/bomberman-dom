@@ -1,9 +1,7 @@
 import { GameMap } from "./map.js";
 import { Player } from "./player.js";
 import { fisherYatesShuffle } from "./../utility/helpres.js";
-
 const POWERUPS = ["Bomb", "Flame", "Speed"];
-
 export class Room {
   constructor(gameInstance) {
     this.game = gameInstance;
@@ -165,9 +163,7 @@ export class Room {
         this.timeIntp = null;
         this.counter = 10;
       }
-
-      this.RoomState = "solo";
-
+      
       const remainingPlayer = Object.values(this.players)[0];
       if (remainingPlayer) {
         remainingPlayer.socket.emit("returnToSolo");
