@@ -24,10 +24,6 @@ export default function registerWSListeners() {
     pendingState.bombsExploded.push(data);
   });
 
-  socket.on("explosionsUpdate", (data) => {
-    pendingState.explosionsFullUpdate = data;
-  });
-
   socket.on("gameStart", (data) => {    
     pendingState.gameStart = data;
     Myapp.navigate("/game")

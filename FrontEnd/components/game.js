@@ -18,7 +18,6 @@ import {
   handleWin,
   handleBombsPlaced,
   handleBombsExploded,
-  handleExplosionsFullUpdate,
   handleMapChange,
   handleLifeUpdate,
   handlePowerUps,
@@ -85,10 +84,6 @@ export default function Game() {
     }
 
     handleBombsExploded(pendingState, setBombs, setExplosions);
-
-    if (pendingState.explosionsFullUpdate) {
-      handleExplosionsFullUpdate(pendingState, setExplosions);
-    }
 
     if (pendingState.gameStart) {
       applyGameStart(

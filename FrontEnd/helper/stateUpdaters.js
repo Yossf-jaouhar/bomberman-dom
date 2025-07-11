@@ -152,11 +152,6 @@ export function handleBombsExploded(pendingState, setBombs, setExplosions) {
   }
 }
 
-export function handleExplosionsFullUpdate(pendingState, setExplosions) {
-  setExplosions(pendingState.explosionsFullUpdate.explosions);
-  pendingState.explosionsFullUpdate = null;
-}
-
 export function handleMapChange(pendingState, setMapTiles) {
   setMapTiles(pendingState.mapChange.map);
   pendingState.mapChange = null;
