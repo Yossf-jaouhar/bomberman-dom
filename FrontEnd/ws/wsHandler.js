@@ -1,11 +1,10 @@
 import Myapp from "../helper/appInstance.js";
 
-
 let socket;
 export function connectWebSocket(nickname) {
 
   return new Promise((resolve) => {
-    socket = io(`https://bomberman-dom-omega.vercel.app/`, {
+    socket = io(`http://${window.location.hostname}:3000`, {
       query: { name: nickname },
     });
 
