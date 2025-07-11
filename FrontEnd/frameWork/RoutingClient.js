@@ -10,7 +10,7 @@ export default class App {
     this.currentComponent = null;
     this.GlobalState = {};
 
-    window.addEventListener("popstate", () => this.handleRoute());
+    window.onpopstate = () => this.handleRoute();
   }
 
   setGlobalState = (key, newVal) => {
@@ -24,13 +24,12 @@ export default class App {
     this.routes.set(path, handler);
   }
 
-   navigate(path) {
+  navigate(path) {
     this.hookStates = [];
     this.hookIndex = 0;
     history.pushState({}, "", path);
     this.handleRoute();
   }
-
 
   useState(initialValue) {
     const currentIndex = this.hookIndex;
@@ -73,7 +72,7 @@ export default class App {
       newVNode = {
         tag: "h1",
         props: {},
-        children: ["404 Not Found"]
+        children: ["404 Not Found"],
       };
     } else {
       if (typeof handler === "function") {
@@ -83,7 +82,7 @@ export default class App {
         newVNode = {
           tag: "h1",
           props: {},
-          children: ["Invalid route handler"]
+          children: ["Invalid route handler"],
         };
       }
     }
