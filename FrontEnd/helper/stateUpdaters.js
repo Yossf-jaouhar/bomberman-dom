@@ -131,8 +131,8 @@ export function handleBombsExploded(pendingState, setBombs, setExplosions) {
         owner: bomb.owner,
       }));
       return [
-        ...prev,
         { x: bomb.x, y: bomb.y, owner: bomb.owner },
+        ...prev,
         ...destroyed,
       ];
     });
@@ -148,7 +148,7 @@ export function handleBombsExploded(pendingState, setBombs, setExplosions) {
             )
         )
       );
-    }, 100);
+    }, 500);
   }
 }
 
