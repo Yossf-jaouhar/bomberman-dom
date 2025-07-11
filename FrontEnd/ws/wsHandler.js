@@ -1,5 +1,7 @@
 import Myapp from "../helper/appInstance.js";
 
+import { io } from "socket.io-client";
+
 let socket;
 export function connectWebSocket(nickname) {
 
