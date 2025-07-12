@@ -148,7 +148,7 @@ export function handleBombsExploded(pendingState, setBombs, setExplosions) {
             )
         )
       );
-    }, 400);
+    }, 600);
   }
 }
 

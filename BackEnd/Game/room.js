@@ -7,8 +7,8 @@ export class Room {
     this.game = gameInstance;
     this.RoomState = null;
     this.players = {};
-    this.Counter = 20;
-    this.counter = 10;
+    this.Counter = 8;
+    this.counter = 1;
     this.timeIntw = null;
     this.timeIntp = null;
     this.chatMessages = [];

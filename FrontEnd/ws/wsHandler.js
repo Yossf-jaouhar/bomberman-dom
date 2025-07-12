@@ -4,7 +4,7 @@ let socket;
 export function connectWebSocket(nickname) {
 
   return new Promise((resolve) => {
-    socket = io(`https://bomberman-dom-production-a082.up.railway.app/`, {
+    socket = io(`http://${window.location.hostname}:3000`, {
       query: { name: nickname },
     });
 

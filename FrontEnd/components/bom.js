@@ -28,7 +28,7 @@ export default function BombDivs(bombs = [], explosions = []) {
         height: 40px;
         position: absolute;
         transform: translate(${explosion.x * 40}px, ${explosion.y * 40}px);
-        background: url('${i === 0 ? '../images/Preview.gif': '../images/explosion.png' }') center/contain no-repeat;
+        background: url('${i === 0 ? '../images/Preview.gif': '../images/bombb.gif' }') center/contain no-repeat;
         z-index: 6;
       `,
     })
