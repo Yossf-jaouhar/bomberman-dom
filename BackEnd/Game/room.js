@@ -1,7 +1,7 @@
 import { GameMap } from "./map.js";
 import { Player } from "./player.js";
 import { fisherYatesShuffle } from "./../utility/helpres.js";
-const POWERUPS = ["Bomb", "Flame", "Speed"];
+const POWERUPS = ["Bomb", "Flame", "Speed", "sor3a"];
 export class Room {
   constructor(gameInstance) {
     this.game = gameInstance;
@@ -433,7 +433,7 @@ export class Room {
           destroyedBlocks.push({ x: checkX, y: checkY }); // ← Track destroyed block
           mapChanged = true;
 
-          if (Math.random() < 0.3) {
+          if (Math.random() < 0.8) {
             const type = POWERUPS[Math.floor(Math.random() * POWERUPS.length)];
             this.powerUps.push({
               x: checkX,

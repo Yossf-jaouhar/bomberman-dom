@@ -11,7 +11,10 @@ export class Player {
     this.explosionRange = 1;
     this.powerUps = [];
     this.avatar = null;
-    this.lastAxis = null
+    this.lastAxis = null;
+
+    this.sor3aTimeout = null;
+    this.sor3aActive = false;
   }
 
   loseLife() {
@@ -19,12 +22,11 @@ export class Player {
     if (this.socket) {
       this.socket.emit("lifeUpdate", {
         lives: this.lives,
-        alive: this.isAlive()
+        alive: this.isAlive(),
       });
     }
     return this.isAlive();
   }
-
   addPowerUp(type) {
     let newValue;
 
@@ -46,7 +48,8 @@ export class Player {
         break;
 
       case "Speed":
-        if (this.speed < 2) {
+        // لا نُطبّق Speed إذا كانت sor3a مفعّلة
+        if (!this.sor3aActive && this.speed < 2) {
           this.speed += 0.5;
           if (this.speed > 2) {
             this.speed = 2;
@@ -56,6 +59,37 @@ export class Player {
         newValue = this.speed;
         break;
 
+      case "sor3a":
+        const oldSpeed = this.speed;
+
+        this.speed = 5;
+        this.sor3aActive = true;
+        this.powerUps.push(type);
+
+        // إذا كان هناك sor3aTimeout سابق، نلغيه
+        if (this.sor3aTimeout) clearTimeout(this.sor3aTimeout);
+
+        this.sor3aTimeout = setTimeout(() => {
+          this.sor3aActive = false;
+          this.sor3aTimeout = null;
+
+          // لا نعيد oldSpeed، نعيد لأقصى حد مسموح به
+          if (this.speed === 5) {
+            // مثال: نرجعها إلى 2 أو إلى أقصى سرعة حصل عليها اللاعب
+            this.speed = Math.min(2, this.speed); // أو حسب التصميم
+          }
+
+          if (this.socket) {
+            this.socket.emit("powerUpExpired", {
+              type: "sor3a",
+              speed: this.speed,
+            });
+          }
+        }, 10000);
+
+        newValue = oldSpeed;
+        break;
+
       default:
         newValue = null;
         break;
@@ -63,11 +97,12 @@ export class Player {
 
     return newValue;
   }
+
   resetPosition(tileX, tileY) {
     this.position = { x: tileX, y: tileY };
     this.pixelPosition = {
       x: tileX * 40,
-      y: tileY * 40
+      y: tileY * 40,
     };
   }
 

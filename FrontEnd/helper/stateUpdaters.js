@@ -45,7 +45,7 @@ export function applyUpdatePlayers(data, setPlayers) {
           pixelX: pos.pixelX,
           pixelY: pos.pixelY,
           tileX: pos.tileX,
-          tileY: pos.tileY, 
+          tileY: pos.tileY,
         });
       }
     }
@@ -59,7 +59,7 @@ export function handlePlayerDied(
   playerName,
   setPlayers,
   setGameOver,
-  setBombs ,
+  setBombs,
   setExplosions,
   cleanupPlayerMovement
 ) {
@@ -67,15 +67,13 @@ export function handlePlayerDied(
     if (!Array.isArray(prevPlayers)) {
       prevPlayers = [];
     }
-    return prevPlayers.filter(
-      (p) => p.name !== pendingState.playerDied.name
-    );
+    return prevPlayers.filter((p) => p.name !== pendingState.playerDied.name);
   });
 
   if (pendingState.playerDied.name === playerName()) {
     cleanupPlayerMovement();
-    setBombs([])
-    setExplosions([])
+    setBombs([]);
+    setExplosions([]);
     setGameOver(true);
   }
   pendingState.playerDied = {};
@@ -118,8 +116,7 @@ export function handleBombsExploded(pendingState, setBombs, setExplosions) {
     // remove bomb
     setBombs((prev) =>
       prev.filter(
-        (b) =>
-          !(b.x === bomb.x && b.y === bomb.y && b.owner === bomb.owner)
+        (b) => !(b.x === bomb.x && b.y === bomb.y && b.owner === bomb.owner)
       )
     );
 
@@ -143,9 +140,7 @@ export function handleBombsExploded(pendingState, setBombs, setExplosions) {
         prev.filter(
           (e) =>
             !(e.x === bomb.x && e.y === bomb.y && e.owner === bomb.owner) &&
-            !data.destroyedBlocks.some(
-              (dt) => dt.x === e.x && dt.y === e.y
-            )
+            !data.destroyedBlocks.some((dt) => dt.x === e.x && dt.y === e.y)
         )
       );
     }, 600);
@@ -176,14 +171,25 @@ export function handlePowerUpPicked(
 ) {
   const { newValue, x, y, type } = pendingState.powerUpPicked;
 
-  setPowerUps((prev) =>
-    prev.filter((p) => !(p.x === x && p.y === y))
-  );
+  setPowerUps((prev) => prev.filter((p) => !(p.x === x && p.y === y)));
 
   switch (type) {
     case "Speed":
       setSpeed(newValue);
       break;
+    case "sor3a":
+      setSpeed(5);
+      setTimeout(() => {
+        setSpeed((prevSpeed) => {
+          if (prevSpeed === 5) {
+            return newValue;
+          }
+          return prevSpeed;
+        });
+      }, 10000);
+
+      break;
+
     case "Bomb":
       setMaxBoms(newValue);
       break;
@@ -200,8 +206,6 @@ export function handlePowerUpPicked(
 
 export function handleRemovePowerUp(pendingState, setPowerUps) {
   const { x, y } = pendingState.removePowerUp;
-  setPowerUps((prev) =>
-    prev.filter((p) => !(p.x === x && p.y === y))
-  );
+  setPowerUps((prev) => prev.filter((p) => !(p.x === x && p.y === y)));
   pendingState.removePowerUp = null;
 }
