@@ -10,6 +10,10 @@ export default function Lobby() {
     return;
   }
   const socket = getSocket();
+  window.onpopstate = () => {
+    Myapp.setGlobalState("name", "");
+    socket.close();
+  };
 
   let [nOfPlayers, setNoOfPlayers] = Myapp.useState(1);
   let [counter, setCounter] = Myapp.useState(null);
@@ -17,21 +21,25 @@ export default function Lobby() {
 
   if (!listeningOn) {
     socket.on("waiting", (data) => {
-      
       setRoomState("waiting");
       setCounter(data.Counter);
       setNoOfPlayers(data.nofplayers);
     });
 
     socket.on("preparing", (data) => {
-      console.log("hi-->",data);  
       setRoomState("preparing");
       setCounter(data.counter);
       setNoOfPlayers(data.nofplayers);
-
     });
 
-    socket.on("playerJoined", (data) => {});
+    socket.on("playerJoined", (data) => { });
+
+    socket.on("returnToSolo", () => {
+
+      setRoomState("solo");
+      setCounter(null);
+      setNoOfPlayers(1);
+    });
 
     if (!isStart) {
       socket.on("Start", () => {
@@ -41,6 +49,7 @@ export default function Lobby() {
     }
     listeningOn = true;
   }
+
 
   return E("div", { class: "LobbyPage df fc gp16 center" }).childs(
     E("div", { class: "LobbyState df center gp24" }).childs(

@@ -1,17 +1,16 @@
 import { GameMap } from "./map.js";
 import { Player } from "./player.js";
 import { fisherYatesShuffle } from "./../utility/helpres.js";
-
 const POWERUPS = ["Bomb", "Flame", "Speed"];
-
 export class Room {
   constructor(gameInstance) {
     this.game = gameInstance;
     this.RoomState = null;
     this.players = {};
-    this.Counter = 5;
-    this.counter = 3;
-    this.timeInt = null;
+    this.Counter = 20;
+    this.counter = 10;
+    this.timeIntw = null;
+    this.timeIntp = null;
     this.chatMessages = [];
     this.map = null;
     this.bombs = [];
@@ -74,7 +73,6 @@ export class Room {
 
       this.counter--;
       this.broadcast("preparing", { counter: this.counter, nofplayers });
-
       if (this.counter <= 0) {
         clearInterval(this.timeIntp);
         this.timeIntp = null;
@@ -107,13 +105,7 @@ export class Room {
       player.resetPosition(pos.x, pos.y);
 
       if (!player.avatar) {
-        if (i < shuffledAvatars.length) {
-          player.avatar = shuffledAvatars[i];
-        } else {
-          console.warn("More players than avatars (may repeat)");
-          player.avatar =
-            avatarList[Math.floor(Math.random() * avatarList.length)];
-        }
+          player.avatar = shuffledAvatars[i];        
       }
       i++;
     }
@@ -125,32 +117,20 @@ export class Room {
         y: player.position.y,
         avatar: player.avatar,
       };
+       player.socket.emit("playerData", {
+        name: player.name,
+        lives: player.lives,
+        maxBombs: player.maxBombs,
+        explosionRange: player.explosionRange,
+        speed: player.speed,
+      });
     }
 
     this.broadcast("gameStart", {
       map: this.map.tiles,
       players: publicPlayersData,
     });
-
-    for (const player of Object.values(this.players)) {
-      player.socket.emit("playerData", {
-        name: player.name,
-        lives: player.lives,
-        maxBombs: player.maxBombs,
-        explosionRange: player.explosionRange,
-        speed: player.speed,
-        avatar: player.avatar,
-        position: {
-          x: player.position.x,
-          y: player.position.y,
-        },
-        pixelPosition: {
-          x: player.pixelPosition.x,
-          y: player.pixelPosition.y,
-        },
-      });
-    }
-
+    
     setInterval(() => {
       this.update();
     }, 1000 / 60);
@@ -158,10 +138,39 @@ export class Room {
 
   removePlayer(name) {
     delete this.players[name];
-    if (Object.keys(this.players).length === 0) {
-      this.game.removeRoom(this);
+
+    const playerCount = Object.keys(this.players).length;
+
+    this.broadcast("playerLeft", {
+      name,
+      players: Object.keys(this.players),
+    });
+
+    if (playerCount === 1) {
+      if (this.timeIntw) {
+        clearInterval(this.timeIntw);
+        this.timeIntw = null;
+        this.Counter = 20;
+      }
+      const playerWon = Object.values(this.players)[0];
+
+      this.broadcast("playerWon", {
+        name: playerWon.name,
+      });
+
+      if (this.timeIntp) {
+        clearInterval(this.timeIntp);
+        this.timeIntp = null;
+        this.counter = 10;
+      }
+      
+      const remainingPlayer = Object.values(this.players)[0];
+      if (remainingPlayer) {
+        remainingPlayer.socket.emit("returnToSolo");
+      }
     }
   }
+
 
   setPlayerDirection(name, direction) {
     const player = this.players[name];
@@ -210,7 +219,6 @@ export class Room {
           avatar: p.avatar,
         };
       }
-
       this.broadcast("updatePlayers", { playersPositions });
     }
   }
@@ -318,13 +326,14 @@ export class Room {
     const newTileY = Math.floor((newY + TILE_SIZE / 2) / TILE_SIZE);
 
     const bombthere = this.bombs.some((b) => {
-      const isStandingOnBomb = b.x === player.position.x && b.y === player.position.y;
+      const isStandingOnBomb =
+        b.x === player.position.x && b.y === player.position.y;
       const isMovingIntoBomb = b.x === newTileX && b.y === newTileY;
       return isMovingIntoBomb && !isStandingOnBomb;
     });
 
     if (bombthere) {
-      return false; 
+      return false;
     }
 
     player.pixelPosition.x = newX;
@@ -454,10 +463,23 @@ export class Room {
             this.broadcast("playerDied", {
               name: player.name,
             });
+            this.removePlayer(player.name);
+            // Check if there’s only one player left
+            const remainingPlayers = Object.values(this.players);
+            if (remainingPlayers.length === 1) {
+              const user = remainingPlayers[0];
+              this.broadcast("playerWon", {
+                name: user.name,
+              });
+              return
+            }
+
           }
         }
       }
     }
+
+
 
     this.broadcast("bombExploded", {
       bomb: { x: bomb.x, y: bomb.y, owner: bomb.owner },

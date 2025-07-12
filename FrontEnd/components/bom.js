@@ -12,8 +12,7 @@ export default function BombDivs(bombs = [], explosions = []) {
         width: 40px;
         height: 40px;
         position: absolute;
-        top: ${bomb.y * 40}px;
-        left: ${bomb.x * 40}px;
+        transform: translate(${bomb.x * 40}px, ${bomb.y * 40}px);
         background: url('../images/bom.png') center/contain no-repeat;
         z-index: 5;
       `,
@@ -28,9 +27,8 @@ export default function BombDivs(bombs = [], explosions = []) {
         width: 40px;
         height: 40px;
         position: absolute;
-        top: ${explosion.y * 40}px;
-        left: ${explosion.x * 40}px;
-        background: url('../images/explosion.png') center/contain no-repeat;
+        transform: translate(${explosion.x * 40}px, ${explosion.y * 40}px);
+        background: url('${i === 0 ? '../images/Preview.gif': '../images/explosion.png' }') center/contain no-repeat;
         z-index: 6;
       `,
     })

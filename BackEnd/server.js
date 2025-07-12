@@ -25,12 +25,7 @@
   };
 
   const server = http.createServer((req, res) => {
-    if (req.url.startsWith('/api/')) {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ message: `API response for ${req.url}` }));
-      return;
-    }
-
+    
     const safePath = path.normalize(req.url).replace(/^(\.\.[\/\\])+/, '');
     const staticFilePath = path.join(frontendDir, safePath);
 

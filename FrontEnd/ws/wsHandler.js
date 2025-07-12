@@ -2,13 +2,24 @@ import Myapp from "../helper/appInstance.js";
 
 let socket;
 export function connectWebSocket(nickname) {
-  
-  return new Promise((resolve, reject) => {
-    socket = io(`http://${window.location.hostname}:3000`, {
+
+  return new Promise((resolve) => {
+    socket = io(`https://bomberman-dom-production-a082.up.railway.app/`, {
       query: { name: nickname },
     });
 
     socket.on("connect", () => {
+      const channel = new BroadcastChannel('bomberman');
+
+      channel.postMessage("playerConnected");
+
+      channel.onmessage = (event) => {
+        if (event.data === "playerConnected") {
+          socket.close()
+          Myapp.navigate('/')
+        }
+      };
+
       console.log("Socket.IO connected as:", nickname);
       resolve(true);
     });
@@ -26,8 +37,6 @@ export function connectWebSocket(nickname) {
       Myapp.setGlobalState("name", "");
       socket.close();
       socket = null;
-      console.log("Socket.IO disconnected");
-      alert("connection lost try again.");
       location.reload()
     });
   });

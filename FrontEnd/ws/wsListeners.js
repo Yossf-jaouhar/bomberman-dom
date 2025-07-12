@@ -24,17 +24,12 @@ export default function registerWSListeners() {
     pendingState.bombsExploded.push(data);
   });
 
-  socket.on("explosionsUpdate", (data) => {
-    pendingState.explosionsFullUpdate = data;
-  });
-
   socket.on("gameStart", (data) => {    
     pendingState.gameStart = data;
     Myapp.navigate("/game")
   });
   
   socket.on("playerData", (data) => {
-    console.log("playerData" , data);
         pendingState.playerData = data;
   });
 
@@ -54,9 +49,7 @@ export default function registerWSListeners() {
     pendingState.playerDied = data;
   });
 
-  socket.on("powerUpSpawned", (data) => {
-    console.log("powerUpspawned");
-    
+  socket.on("powerUpSpawned", (data) => {    
     pendingState.powerUps = data;
   });
 
@@ -66,6 +59,9 @@ export default function registerWSListeners() {
 
   socket.on("removePowerUp", (data) => {
     pendingState.removePowerUp = data;
+  });
+  socket.on("playerWon", (data) => {
+    pendingState.win = data;
   });
 
 }

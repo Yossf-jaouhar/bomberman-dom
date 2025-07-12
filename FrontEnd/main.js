@@ -6,4 +6,4 @@ import Game from "./components/game.js";
 Myapp.addRoute('/', Start);
 Myapp.addRoute('/lobby', Lobby);
 Myapp.addRoute('/game', Game);
-Myapp.render(() => Myapp.handleRoute());
+Myapp.render();

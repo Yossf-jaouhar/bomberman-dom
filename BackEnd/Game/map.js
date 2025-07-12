@@ -73,15 +73,5 @@ export class GameMap {
 
         return false;
     }
-
-    printMap() {
-        for (let r = 0; r < this.rows; r++) {
-            let rowStr = "";
-            for (let c = 0; c < this.columns; c++) {
-                rowStr += this.getTile(r, c) + " ";
-            }
-            console.log(rowStr);
-        }
-    }
 }
 
