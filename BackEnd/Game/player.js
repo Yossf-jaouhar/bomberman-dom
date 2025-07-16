@@ -48,8 +48,8 @@ export class Player {
         break;
 
       case "Speed":
-        // لا نُطبّق Speed إذا كانت sor3a مفعّلة
-        if (!this.sor3aActive && this.speed < 2) {
+
+      if (!this.sor3aActive && this.speed < 2) {
           this.speed += 0.5;
           if (this.speed > 2) {
             this.speed = 2;
@@ -66,17 +66,14 @@ export class Player {
         this.sor3aActive = true;
         this.powerUps.push(type);
 
-        // إذا كان هناك sor3aTimeout سابق، نلغيه
         if (this.sor3aTimeout) clearTimeout(this.sor3aTimeout);
 
         this.sor3aTimeout = setTimeout(() => {
           this.sor3aActive = false;
           this.sor3aTimeout = null;
 
-          // لا نعيد oldSpeed، نعيد لأقصى حد مسموح به
           if (this.speed === 5) {
-            // مثال: نرجعها إلى 2 أو إلى أقصى سرعة حصل عليها اللاعب
-            this.speed = Math.min(2, this.speed); // أو حسب التصميم
+            this.speed = Math.min(2, this.speed); 
           }
 
           if (this.socket) {

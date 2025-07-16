@@ -393,7 +393,7 @@ export class Room {
     this.bombs = this.bombs.filter((b) => b !== bomb);
 
     const blastTiles = [];
-    const destroyedBlocks = []; // ← New array to store destroyed blocks
+    const destroyedBlocks = []; 
 
     blastTiles.push({ x: bomb.x, y: bomb.y });
 
@@ -430,7 +430,7 @@ export class Room {
 
         if (tile === this.map.TILE_BLOCK) {
           this.map.setTile(checkY, checkX, this.map.TILE_EMPTY);
-          destroyedBlocks.push({ x: checkX, y: checkY }); // ← Track destroyed block
+          destroyedBlocks.push({ x: checkX, y: checkY }); 
           mapChanged = true;
 
           if (Math.random() < 0.8) {
@@ -461,7 +461,6 @@ export class Room {
               name: player.name,
             });
             this.removePlayer(player.name);
-            // Check if there’s only one player left
             const remainingPlayers = Object.values(this.players);
             if (remainingPlayers.length === 1) {
               const user = remainingPlayers[0];
@@ -481,7 +480,7 @@ export class Room {
     this.broadcast("bombExploded", {
       bomb: { x: bomb.x, y: bomb.y, owner: bomb.owner },
       blastTiles,
-      destroyedBlocks, // ← send list of destroyed blocks
+      destroyedBlocks, 
     });
 
     if (mapChanged) {
